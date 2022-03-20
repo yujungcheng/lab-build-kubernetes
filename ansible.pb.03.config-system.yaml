@@ -1,0 +1,58 @@
+---
+- name: configure system setting
+  hosts: all
+  remote_user: ubuntu
+  become: true
+  tasks:
+  - name: check fstab backup file
+    ansible.builtin.stat:
+      path: /etc/fstab.bak
+    register: fstab_backup
+
+  - name: backup fstab if not exist
+    ansible.builtin.copy:
+      src: /etc/fstab
+      dest: /etc/fstab.bak
+    when: not fstab_backup.stat.exists
+   
+  - name: comment out swap in fstab
+    ansible.builtin.replace:
+      path: /etc/fstab
+      regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+      replace: '# \1'
+
+# use shell module  and sed command
+#  - name: comment out swap in fstab (default ubuntu swapfile)
+#    ansible.builtin.shell: |
+#      sed -i 's/^\/swapfile/#\/swapfile/g' /etc/fstab
+#    when: fstab_backup.stat.exists
+
+  - name: turn off swap
+    ansible.builtin.shell: |
+      swapoff -a
+
+  - name: enable kernel modules
+    ansible.builtin.modprobe:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - overlay
+    - br_netfilter
+
+  - name: config sysctl
+    ansible.posix.sysctl:
+      sysctl_file: /etc/sysctl.d/kubernetes.conf
+      name: "{{ item }}"
+      value: "1"
+      state: present
+      sysctl_set: yes
+      reload: yes
+    with_items:
+    - net.bridge.bridge-nf-call-ip6tables
+    - net.bridge.bridge-nf-call-iptables
+    - net.ipv4.ip_forward
+
+  # an bug in "sysctl --system" command which print
+  # sysctl: setting key "net.ipv4.conf.all.promote_secondaries": Invalid argument
+  # ref. https://github.com/systemd/systemd/issues/17156
+

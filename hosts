@@ -1,0 +1,9 @@
+master ansible_host=192.168.122.10
+worker-1 ansible_host=192.168.122.11
+worker-2 ansible_host=192.168.122.12
+worker-3 ansible_host=192.168.122.13
+
+[all:vars]
+OS_VERSION = 'xUbuntu_20.04'
+CRIO_VERSION = '1.23'
+

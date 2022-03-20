@@ -1,0 +1,71 @@
+---
+- name: install kubelet, kubeadm, kubectl
+  hosts: all
+  remote_user: ubuntu
+  become: true
+  tasks:
+  - name: update apt cache
+    ansible.builtin.apt:
+      cache_valid_time: 3600
+      update_cache: yes
+
+  - name: apt install curl apt-transport-https
+    ansible.builtin.apt:
+      state: present
+      pkg:
+      - curl
+      - apt-transport-https
+
+  - name: add gpg key
+    ansible.builtin.apt_key:
+      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      state: present
+
+  - name: add kubernetes repository
+    ansible.builtin.apt_repository:
+      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+      filename: kubernetes.list
+      state: present
+
+  - name: update apt cache
+    ansible.builtin.apt:
+      update_cache: yes
+  
+  - name: install packages
+    ansible.builtin.apt:
+      state: present
+      pkg:
+      - vim
+      - git
+      - wget
+      - kubelet
+      - kubeadm
+      - kubectl
+
+  - name: set packages to hold
+    ansible.builtin.dpkg_selections:
+      name: "{{ item }}"
+      selection: hold
+    with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+  - name: gather package facts
+    ansible.builtin.package_facts:
+      manager: apt
+
+  - name: check kubelet version
+    ansible.builtin.debug:
+      msg: "{{ ansible_facts.packages['kubelet'] }} version installed"
+    when: "'kubelet' in ansible_facts.packages"
+
+  - name: check kubeadm version
+    ansible.builtin.debug:
+      msg: "{{ ansible_facts.packages['kubeadm'] }} version installed"
+    when: "'kubeadm' in ansible_facts.packages"
+
+  - name: check kubectl version
+    ansible.builtin.debug:
+      msg: "{{ ansible_facts.packages['kubectl'] }} version installed"
+    when: "'kubectl' in ansible_facts.packages"

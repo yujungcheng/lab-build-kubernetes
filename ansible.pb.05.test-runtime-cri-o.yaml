@@ -1,0 +1,65 @@
+---
+- name: Test CRI-O create pod and container
+  hosts: all
+  become: true
+  tasks:
+
+# todo:
+#  - name: check test images if exist
+#    ansible.builtin.shell: |
+#      crictl images --output json "{{ item  }}"
+#    with_items:
+#     - docker.io/library/nginx
+
+#  - name: pull test images
+#    ansible.builtin.shell: |
+#      crictl pull {{ item }}
+#    with_items:
+#    - nginx
+#    - hello-world
+
+  - name: check test images
+    ansible.builtin.shell: |
+      crictl images
+    register: crictl_images
+
+  - name: print test images
+    ansible.builtin.debug:
+      msg: "{{ crictl_images.stdout.split('\n')}}"
+
+  - name: copy pod network config file
+    ansible.builtin.template:
+      src: ansible.tp.crio.pod-network.json
+      dest: /tmp/crio.pod-network.json
+
+  - name: copy pod nginx config file
+    ansible.builtin.template:
+      src: ansible.tp.crio.pod-nginx.json
+      dest: /tmp/crio.pod-nginx.json
+
+  - name: call get-pod-id tasks
+    include_tasks: "ansible.tk.get-pod-id.yaml"
+
+  - name: stop pod if exist
+    ansible.builtin.shell: |
+      crictl stopp {{ pod_id.msg }}
+    when: fact_pod_id is defined
+    ignore_errors: yes
+
+  - name: delete pod if exist
+    ansible.builtin.shell: |
+      crictl rmp {{ fact_pod_id }}
+    when: fact_pod_id is defined
+    ignore_errors: yes
+  
+  - name: execcute crictl runp ansible.tp.crio.pod-network.json
+    ansible.builtin.shell: |
+      crictl runp /tmp/crio.pod-network.json
+
+  - name: call get-pod-id tasks again
+    include_tasks: "ansible.tk.get-pod-id.yaml"
+
+  - name: run crictl create pod-network and pod-nginx
+    ansible.builtin.shell: |
+      crictl create {{ fact_pod_id }} /tmp/crio.pod-nginx.json /tmp/crio.pod-network.json
+    when: fact_pod_id is defined

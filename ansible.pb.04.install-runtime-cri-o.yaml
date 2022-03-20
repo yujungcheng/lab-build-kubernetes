@@ -1,0 +1,73 @@
+---
+- name: Install CRI-O Runtime
+  hosts: all
+  remote_user: ubuntu
+  become: true
+  tasks:
+  #- name: ensure kernel modules loaded
+
+  #- name: ensure required sysctl parameters
+
+  - name: import crio gpg key 1
+    ansible.builtin.apt_key:
+      url: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ OS_VERSION }}/Release.key"
+      state: present
+
+  - name: import crio gpg key 2
+    ansible.builtin.apt_key:
+      url: "https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:{{ CRIO_VERSION }}/{{ OS_VERSION }}/Release.key"
+      state: present
+
+  - name: add crio repository 1
+    ansible.builtin.apt_repository:
+      repo: "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ OS_VERSION }}/ /"
+      filename: "/etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
+      state: present
+
+  - name: add crio repository 2
+    ansible.builtin.apt_repository:
+      repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ CRIO_VERSION }}/{{ OS_VERSION }}/ /"
+      filename: "/etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:{{ CRIO_VERSION }}.list"
+      state: present
+
+  - name: update apt cache
+    ansible.builtin.apt:
+      update_cache: yes
+    ignore_errors: yes  # suse repo sometimes has issue
+
+  - name: install cri-o and cri-o-runc
+    ansible.builtin.apt:
+      state: present
+      pkg:
+      - cri-o
+      - cri-o-runc
+
+  - name: check installed cri-o info
+    ansible.builtin.shell: |
+      apt show cri-o
+    register: crio_info
+
+  - name: print installed cri-o info
+    ansible.builtin.debug:
+      msg: "{{ crio_info.stdout.split('\n') }}"
+
+  - name: enable and start crio service
+    ansible.builtin.systemd:
+      name: crio
+      state: started
+      daemon_reload: yes
+      enabled: yes
+      
+  - name: install cri-tools
+    ansible.builtin.apt:
+      state: present
+      pkg: cri-tools
+
+  - name: check crictl info
+    ansible.builtin.shell: |
+      crictl info
+    register: crictl_info
+
+  - name: print crictl info
+    ansible.builtin.debug:
+      msg: "{{ crictl_info.stdout }}"

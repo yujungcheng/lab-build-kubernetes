@@ -1,0 +1,15 @@
+---
+- name: apt update and upgrade
+  hosts: all
+  remote_user: ubuntu
+  become: true
+  tasks:
+  - name: apt update and safe upgrade
+    ansible.builtin.apt:
+      update_cache: yes
+      upgrade: safe
+
+#- name: reboot
+#  ansible.builtin.reboot:
+#    post_reboot_delay: 30
+#    reboot_timeout: 120

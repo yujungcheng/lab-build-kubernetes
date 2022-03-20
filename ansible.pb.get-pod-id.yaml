@@ -1,0 +1,29 @@
+---
+- name: Get Pod ID by name
+  remote_user: ubuntu
+  become: true
+  tasks:
+  - name: get pod info
+    ansible.builtin.shell: |
+      crictl pods --name networking --output json --last 1
+    register: pod_info
+    ignore_errors: yes
+
+  - name: parser pod id
+    ansible.builtin.debug:
+      #msg: "{{ pod_info | community.general.json_query('items[0].id') }}"
+      msg: "{{ pod_info.stdout | from_json | json_query('items[0].id') }}"
+    register: pod_id
+    when: pod_info is defined
+
+  - name: just print pod id again
+    ansible.builtin.debug:
+      msg: "{{ pod_id.msg }}"
+
+  - name: set fact
+    ansible.builtin.set_fact:
+      fact_pod_id: "{{ pod_id.msg }}"
+
+  - name: print fact
+    ansible.builtin.debug:
+      msg: "{{ fact_pod_id }}"

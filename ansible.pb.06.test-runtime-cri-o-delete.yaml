@@ -1,0 +1,20 @@
+---
+- name: Delete CRI-O test created pod and container
+  hosts: all
+  become: true
+  tasks:
+
+  - name: call get-pod-id tasks
+    include_tasks: "ansible.tk.get-pod-id.yaml"
+
+  - name: stop pod if exist
+    ansible.builtin.shell: |
+      crictl stopp {{ pod_id.msg }}
+    when: fact_pod_id is defined
+    ignore_errors: yes
+
+  - name: delete pod if exist
+    ansible.builtin.shell: |
+      crictl rmp {{ fact_pod_id }}
+    when: fact_pod_id is defined
+    ignore_errors: yes
