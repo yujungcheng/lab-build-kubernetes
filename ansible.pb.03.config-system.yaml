@@ -1,5 +1,5 @@
 ---
-- name: configure system setting
+- name: Configure system setting
   hosts: all
   remote_user: ubuntu
   become: true
@@ -56,3 +56,6 @@
   # sysctl: setting key "net.ipv4.conf.all.promote_secondaries": Invalid argument
   # ref. https://github.com/systemd/systemd/issues/17156
 
+  - name: disable ufw
+    ansible.builtin.shell: |
+      ufw disable

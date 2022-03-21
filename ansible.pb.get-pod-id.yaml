@@ -1,5 +1,6 @@
 ---
 - name: Get Pod ID by name
+  hosts: all
   remote_user: ubuntu
   become: true
   tasks:

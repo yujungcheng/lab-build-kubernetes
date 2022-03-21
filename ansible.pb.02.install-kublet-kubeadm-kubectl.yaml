@@ -1,5 +1,5 @@
 ---
-- name: install kubelet, kubeadm, kubectl
+- name: Install kubelet, kubeadm, kubectl
   hosts: all
   remote_user: ubuntu
   become: true

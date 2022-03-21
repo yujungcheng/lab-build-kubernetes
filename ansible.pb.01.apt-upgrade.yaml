@@ -1,5 +1,5 @@
 ---
-- name: apt update and upgrade
+- name: Get apt update and upgrade
   hosts: all
   remote_user: ubuntu
   become: true

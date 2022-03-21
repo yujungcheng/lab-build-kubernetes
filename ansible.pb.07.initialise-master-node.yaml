@@ -1,0 +1,79 @@
+---
+- name: Initialise master node
+  hosts: master
+  become: true
+  tasks:
+  - name: ensure br_netfilter module loaded
+    community.general.modprobe:
+      name: br_netfilter
+      state: present
+
+  - name: enable kubelet service
+    ansible.builtin.systemd:
+      name: kubelet
+      enabled: yes
+
+  - name: list container images for kubeadm
+    ansible.builtin.shell: |
+      kubeadm config images list
+    register: kubeadm_images
+
+  - name: print kubeadm image list
+    ansible.builtin.debug:
+      msg: "{{ kubeadm_images.stdout }}"
+
+  - name: pull container images for kubeadm
+    ansible.builtin.shell: |
+      kubeadm config images pull --cri-socket /var/run/crio/crio.sock
+
+  # todo: use variable
+  - name: add record in /etc/hosts
+    ansible.builtin.lineinfile:
+      path: /etc/hosts
+      line: "192.168.122.10 k8s.homelab.com"
+      state: present
+
+  - name: kubeadm reset
+    ansible.builtin.shell: |
+      kubeadm reset --force
+
+  # todo: use variable
+  - name: bootstrap cluster with shared endpoint (dns name for control plane API)
+    ansible.builtin.shell: |
+      kubeadm init --cri-socket /var/run/crio/crio.sock \
+      --pod-network-cidr=10.85.0.0/16 \
+      --control-plane-endpoint=k8s.homelab.com \
+      --upload-certs > /tmp/kubeadm.init.{{ '%Y%m%d%H%M%S' | strftime(ansible_date_time.epoch) }}.log
+
+  # refer to the kubeadm init log to setup kube config for ubuntu user
+  - name: create kube config in ubuntu home
+    ansible.builtin.file:
+      path: /home/ubuntu/.kube
+      state: directory
+      owner: ubuntu
+      group: ubuntu
+      mode: '0755'
+
+  - name: copy kube conf to ubuntu home
+    ansible.builtin.copy:
+      remote_src: yes
+      src: /etc/kubernetes/admin.conf
+      dest: /home/ubuntu/.kube/config
+      owner: ubuntu
+      group: ubuntu
+
+  - name: check cluster info
+    ansible.builtin.shell: |
+      export KUBECONFIG=/etc/kubernetes/admin.conf; kubectl cluster-info
+    register: kubectl_cluster_info
+
+  - name: print cluster info
+    debug:
+      msg: "{{ kubectl_cluster_info.stdout }}"
+
+# for ref in case need
+#  - name: add additional master nodes
+#    ansible.builtin.shell: |
+#      kubeadm join k8s.homelab.com:6443 --token ...... \
+#      --discovery-token-ca-cert-hash ...... \
+#      --control-plane
