@@ -1,0 +1,8 @@
+---
+- name: Install Calico network plugin on master
+  hosts: master
+  become: true
+  tasks:
+  - name: kubectl create tigera-operator
+    ansible.builtin.shell: |
+      kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml

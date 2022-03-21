@@ -45,7 +45,7 @@
       --control-plane-endpoint=k8s.homelab.com \
       --upload-certs > /tmp/kubeadm.init.{{ '%Y%m%d%H%M%S' | strftime(ansible_date_time.epoch) }}.log
 
-  # refer to the kubeadm init log to setup kube config for ubuntu user
+# refer to the kubeadm init log to setup kube config for ubuntu user
   - name: create kube config in ubuntu home
     ansible.builtin.file:
       path: /home/ubuntu/.kube
@@ -70,6 +70,18 @@
   - name: print cluster info
     debug:
       msg: "{{ kubectl_cluster_info.stdout }}"
+
+# also add kube config into root
+  - name: create kube config in root home
+    ansible.builtin.file:
+      path: /root/.kube
+      state: directory
+  
+  - name: copy kube conf to root home
+    ansible.builtin.copy:
+      remote_src: yes
+      src: /etc/kubernetes/admin.conf
+      dest: /root/.kube/config
 
 # for ref in case need
 #  - name: add additional master nodes

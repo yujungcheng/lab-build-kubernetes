@@ -36,12 +36,15 @@ network:
   version: 2
 ```
 
- 
-# run playbook with -K (become root password)
+## Ansible Playbook 
+```
+$ ansible-playbook <playbook filename> -K 
+``` 
+> **_NOTE:_** run playbook with -K (become root password) 
 
 
 ## Todo:
-- use "sshpass"
+- use "sshpass" to templating VM image
 - automation VM creation and setup
 - automation network and IP setup
 - automation ssh-copy-id
