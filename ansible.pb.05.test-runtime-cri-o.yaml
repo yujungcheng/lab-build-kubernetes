@@ -11,12 +11,13 @@
 #    with_items:
 #     - docker.io/library/nginx
 
-#  - name: pull test images
-#    ansible.builtin.shell: |
-#      crictl pull {{ item }}
-#    with_items:
-#    - nginx
-#    - hello-world
+  - name: pull test images
+    ansible.builtin.shell: |
+      crictl pull {{ item }}
+    with_items:
+    - nginx
+    - hello-world
+    ignore_errors: yes
 
   - name: check test images
     ansible.builtin.shell: |

@@ -2,7 +2,84 @@
 - name: Install Calico network plugin on master
   hosts: master
   become: true
+  vars:
+    timestamp: "{{ '%Y%m%d%H%M%S' | strftime(ansible_date_time.epoch) }}"
   tasks:
-  - name: kubectl create tigera-operator
-    ansible.builtin.shell: |
-      kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
+  - name: delete tigera-operator resource if exist
+    ansible.builtin.command:
+      cmd: kubectl delete -f {{ MANIFEST_TIGERA_OPERATOR_URL }}
+    ignore_errors: yes
+
+  - name: delete custom-resources resource if exist
+    ansible.builtin.command:
+      cmd: kubectl delete -f {{ MANIFEST_CUSTOM_RESOURCES_URL }}
+    ignore_errors: yes
+
+  - name: kubectl create tigera-operator resource
+    ansible.builtin.command:
+      cmd: kubectl create -f {{ MANIFEST_TIGERA_OPERATOR_URL }}
+    register: kubectl_create_tigera_operator_output
+
+  - name: create output file
+    become: false
+    local_action:
+      module: ansible.builtin.file
+      path: "/tmp/kubectl.create.tigera-operator.{{ inventory_hostname }}.{{ timestamp }}.log"
+      state: touch
+
+  - name: save kubectl command output to file
+    become: false
+    local_action:
+      module: ansible.builtin.copy
+      content: "{{ kubectl_create_tigera_operator_output.stdout }}"
+      dest: "/tmp/kubectl.create.tigera-operator.{{ inventory_hostname }}.{{ timestamp }}.log"
+
+  - name: kubectl create custom-resources resource
+    ansible.builtin.command:
+      cmd: kubectl create -f {{ MANIFEST_CUSTOM_RESOURCES_URL }}
+    register: kubectl_create_custom_resource_output
+
+  - name: create output file
+    become: false
+    local_action:
+      module: ansible.builtin.file
+      path: "/tmp/kubectl.create.custom-resources.{{ inventory_hostname }}.{{ timestamp }}.log"
+      state: touch
+
+  - name: save kubectl command output to file
+    become: false
+    local_action:
+      module: ansible.builtin.copy
+      content: "{{ kubectl_create_custom_resource_output.stdout }}"
+      dest: "/tmp/kubectl.create.custom-resources.{{ inventory_hostname }}.{{ timestamp }}.log"
+
+  - name: download calico manifest
+    ansible.builtin.command:
+      cmd: curl https://docs.projectcalico.org/manifests/calico.yaml -O
+
+  - name: kubectl apply calico manifest
+    ansible.builtin.command:
+      cmd: kubectl apply -f calico.yaml
+
+  - name: wiat for 5 seconds to get pods created
+    wait_for:
+      timeout: 5
+
+  - name: check pods status
+    ansible.builtin.command:
+      cmd: kubectl get pods --all-namespaces
+    register: pods_status
+
+  - name: print pods status
+    ansible.builtin.debug:
+      msg: "{{ pods_status.stdout }}"
+
+  - name: check master node status
+    ansible.builtin.command:
+      cmd: kubectl get nodes -o wide
+    register: nodes_status
+
+  - name: print nodes status
+    ansible.builtin.debug:
+      msg: "{{ nodes_status.stdout }}"
+

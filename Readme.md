@@ -50,7 +50,11 @@ $ ansible-playbook <playbook filename> -K
 - automation ssh-copy-id
 
 
-# Reference:
+## Reference:
 https://computingforgeeks.com/deploy-kubernetes-cluster-on-ubuntu-with-kubeadm/
 https://computingforgeeks.com/install-cri-o-container-runtime-on-ubuntu-linux/
 
+## Issue reference:
+https://github.com/cri-o/cri-o/issues/5490
+https://github.com/cri-o/cri-o/issues/3259
+https://githubhot.com/repo/tigera/operator/issues/1780
