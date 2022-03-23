@@ -1,0 +1,97 @@
+---
+# if already deployed, dont want to re-deploy again.
+# although re-apply does not get issue, just try to skip it.
+- name: Install Kubernetes Dashboard
+  hosts: master
+  vars:
+    dashboard_yaml_file: "/tmp/dashboard.yaml"
+    dashboard_flag_file: "/tmp/flag_dashboard"
+  tasks:
+  - name: check dashboard flag file
+    ansible.builtin.stat:
+      path: "{{ dashboard_flag_file }}"
+    register: flag_dashboard
+
+  - name: download dashboard manifest
+    ansible.builtin.get_url:
+      url: "{{ MANIFEST_DASHBOARD_URL }}"
+      dest: "{{ dashboard_yaml_file }}"
+    when: not flag_dashboard.stat.exists
+
+  - name: kubectl apply the manifest
+    ansible.builtin.command:
+      cmd: kubectl apply -f {{ dashboard_yaml_file }}
+    when: not flag_dashboard.stat.exists
+
+  - name: create flag file for dashboard has been deployed.
+    ansible.builtin.file:
+      path: "{{ dashboard_flag_file }}"
+      state: touch
+    when: not flag_dashboard.stat.exists
+
+  - name: check dashboard pod
+    ansible.builtin.command:
+      cmd: kubectl get pods --namespace kubernetes-dashboard
+    register: pods_status
+  
+  - name: print dashboard pod
+    ansible.builtin.debug:
+      msg: "{{ pods_status.stdout }}"
+
+  - name: check dashboard services
+    ansible.builtin.command:
+      cmd: kubectl get service --namespace kubernetes-dashboard
+    register: services_status
+
+  - name: print dashboard services
+    ansible.builtin.debug:
+      msg: "{{ services_status.stdout }}"
+
+  - name: patch the dashboard service to listen on NodePort
+    ansible.builtin.shell: |
+      kubectl --namespace kubernetes-dashboard patch svc kubernetes-dashboard -p '{"spec": {"type": "NodePort"}}'
+
+  - name: check the new setting
+    ansible.builtin.command:
+      cmd: kubectl get service --namespace kubernetes-dashboard kubernetes-dashboard -o yaml
+    register: services_status
+
+  - name: print dashboard services in yaml output
+    ansible.builtin.debug:
+      msg: "{{ services_status.stdout }}"
+
+  - name: copy dashboard node port patch file which expose the service on static port 32000
+    ansible.builtin.template:
+      src: ansible.tp.dashboard.nodeport-patch.yaml
+      dest: /tmp/dashboard.nodeport-patch.yaml
+
+  - name: apply dashboard node patch file
+    ansible.builtin.shell: |
+      kubectl --namespace kubernetes-dashboard patch service kubernetes-dashboard --patch "$(cat /tmp/dashboard.nodeport-patch.yaml)"
+
+  - name: check dashboard deployment status
+    ansible.builtin.command:
+      cmd: kubectl get deployments --namespace kubernetes-dashboard
+    register: deployment_status
+  
+  - name: print dashboard deployment status
+    ansible.builtin.debug:
+      msg: "{{ deployment_status.stdout }}"
+
+  - name: check dashboard pods status
+    ansible.builtin.command:
+      cmd: kubectl get pods --namespace kubernetes-dashboard
+    register: pod_status
+  
+  - name: print dashboard pod status
+    ansible.builtin.debug:
+      msg: "{{ pod_status.stdout }}"
+
+  - name: check dashboard service status
+    ansible.builtin.command:
+      cmd: kubectl get service --namespace kubernetes-dashboard
+    register: service_status
+
+  - name: print dashboard service status
+    ansible.builtin.debug:
+      msg: "{{ service_status.stdout }}"

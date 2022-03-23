@@ -3,9 +3,22 @@ worker-1 ansible_host=192.168.122.11
 worker-2 ansible_host=192.168.122.12
 worker-3 ansible_host=192.168.122.13
 
+
+[masters]
+master
+
+
+[workers]
+worker-1
+worker-2
+worker-3
+
+
 [all:vars]
 OS_VERSION = 'xUbuntu_20.04'
 CRIO_VERSION = '1.23'
 
 MANIFEST_TIGERA_OPERATOR_URL = 'https://docs.projectcalico.org/manifests/tigera-operator.yaml'
 MANIFEST_CUSTOM_RESOURCES_URL = 'https://docs.projectcalico.org/manifests/custom-resources.yaml'
+MANIFEST_TEST_POD_URL = 'https://k8s.io/examples/pods/commands.yaml'
+MANIFEST_DASHBOARD_URL = 'https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended.yaml'

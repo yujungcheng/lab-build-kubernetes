@@ -1,0 +1,24 @@
+---
+- name: Test application deployment
+  hosts: master
+  tasks:
+  - name: create test pod
+    ansible.builtin.command:
+      cmd: kubectl apply -f {{ MANIFEST_TEST_POD_URL }}
+
+  - name: wait for 15 seconds to let pod complete
+    ansible.builtin.pause:
+      seconds: 15
+
+  - name: check test pod
+    ansible.builtin.command:
+      cmd: kubectl get pods
+    register: test_pod_output
+    
+  - name: print test pod status
+    ansible.builtin.debug:
+      msg: "{{ test_pod_output.stdout }}"
+
+  - name: delete test pod
+    ansible.builtin.command:
+      cmd: kubectl delete -f {{ MANIFEST_TEST_POD_URL }}

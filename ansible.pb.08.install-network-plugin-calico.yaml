@@ -1,6 +1,6 @@
 ---
 - name: Install Calico network plugin on master
-  hosts: master
+  hosts: masters
   become: true
   vars:
     timestamp: "{{ '%Y%m%d%H%M%S' | strftime(ansible_date_time.epoch) }}"

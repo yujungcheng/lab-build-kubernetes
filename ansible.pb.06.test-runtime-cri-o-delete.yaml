@@ -3,7 +3,6 @@
   hosts: all
   become: true
   tasks:
-
   - name: call get-pod-id tasks
     include_tasks: "ansible.tk.get-pod-id.yaml"
 

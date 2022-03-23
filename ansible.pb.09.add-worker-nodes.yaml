@@ -1,0 +1,43 @@
+---
+- name: Get token from single master node
+  hosts: master
+  tasks:
+  - name: get join command
+    ansible.builtin.command:
+      cmd: kubeadm token create --print-join-command
+    register: join_worker_node_command
+
+  - name: print the join command
+    ansible.builtin.debug:
+      msg: "{{ join_worker_node_command.stdout }}"
+
+- name: Add worker nodes
+  hosts: workers
+  become: true
+  tasks:
+  - name: add endpoint record in /etc/hosts
+    ansible.builtin.lineinfile:
+      path: /etc/hosts
+      line: "192.168.122.10 k8s.homelab.com"
+      state: present
+
+  - name: add worker node
+    ansible.builtin.command:
+      cmd: "{{ hostvars['master']['join_worker_node_command'].stdout }}"
+    register: join_worker_output
+
+  - name: print join worker output
+    ansible.builtin.debug:
+      msg: "{{ join_worker_output.stdout }}"
+
+- name: Cehckn worker nodes
+  hosts: masters
+  tasks:
+  - name: get nodes status
+    ansible.builtin.command:
+      cmd: kubectl get nodes -o wide
+    register: get_nodes_status
+  
+  - name: print node status
+    ansible.builtin.debug:
+      msg: "{{ get_nodes_status.stdout }}"

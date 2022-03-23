@@ -1,7 +1,9 @@
 ---
 - name: Initialise master node
-  hosts: master
+  hosts: masters
   become: true
+  vars:
+    timestamp: "{{ '%Y%m%d%H%M%S' | strftime(ansible_date_time.epoch) }}"
   tasks:
   - name: ensure br_netfilter module loaded
     community.general.modprobe:
@@ -26,7 +28,7 @@
     ansible.builtin.shell: |
       kubeadm config images pull --cri-socket /var/run/crio/crio.sock
 
-  # todo: use variable
+  # todo: use variable, what to do with multiple masters
   - name: add record in /etc/hosts
     ansible.builtin.lineinfile:
       path: /etc/hosts
@@ -83,7 +85,7 @@
       src: /etc/kubernetes/admin.conf
       dest: /root/.kube/config
 
-# for ref in case need
+# for ref in case need, check this from the kubeadm.init log
 #  - name: add additional master nodes
 #    ansible.builtin.shell: |
 #      kubeadm join k8s.homelab.com:6443 --token ...... \
