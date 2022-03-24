@@ -1,0 +1,71 @@
+---
+- name: Install Metrics Server
+  hosts: master
+  tasks:
+  - name: copy metrics server manifest
+    ansible.builtin.template:
+      src: ansible.tp.metrics-server-components.yaml
+      dest: /tmp/metrics-server-components.yaml
+
+  - name: apply metrics server manifest
+    ansible.builtin.command:
+      cmd: kubectl apply -f /tmp/metrics-server-components.yaml
+    register: metrics_server_apply_output
+
+  - name: print apply metrics server manifest output
+    ansible.builtin.debug:
+      msg: "{{ metrics_server_apply_output.stdout }}"
+
+  - name: check metrics server deployment status
+    ansible.builtin.command:
+      cmd: kubectl get deployment metrics-server --namespace kube-system
+    register: metrics_server_deployment_status
+
+  - name: print metrics server deployment status
+    ansible.builtin.debug:
+      msg: "{{ metrics_server_deployment_status.stdout }}"
+
+  - name: check metrics server pod status
+    ansible.builtin.shell: |
+      kubectl get pods --namespace kube-system | grep "^metrics-server-"
+    register: metrics_server_pod_status
+
+  - name: print metrics server pod status
+    ansible.builtin.debug:
+      msg: "{{ metrics_server_pod_status.stdout }}"
+
+  - name: confirm metrics server is active
+    ansible.builtin.command:
+      cmd: kubectl get apiservice v1beta1.metrics.k8s.io -o yaml
+    register: metrics_server_apiservice
+  
+  - name: print metrics server apiservice
+    ansible.builtin.debug:
+      msg: "{{ metrics_server_apiservice.stdout }}"
+
+  - name: check kubectl top nodes
+    ansible.builtin.command:
+      cmd: kubectl top nodes
+    register: kubectl_top_nodes
+
+  - name: print kubectl top nodes
+    ansible.builtin.debug:
+      msg: "{{ kubectl_top_nodes.stdout }}"
+
+  - name: check kubectl top pods
+    ansible.builtin.command:
+      cmd: kubectl top pods -A
+    register: kubectl_top_pods
+    
+  - name: print kubectl top pods
+    ansible.builtin.debug:
+      msg: "{{ kubectl_top_pods.stdout }}"
+
+  - name: check raw resource usage metrics to all nodes
+    ansible.builtin.command:
+      cmd: kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes"
+    register: kubectl_metrics_raw_resource_usage
+    
+  - name: print kubectl top nodes
+    ansible.builtin.debug:
+      msg: "{{ kubectl_metrics_raw_resource_usage.stdout }}"

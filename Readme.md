@@ -45,7 +45,8 @@ network:
 # Run playbook command
 $ ansible-playbook <playbook filename> -K 
 ``` 
-> **_NOTE:_** run playbook with -K (become root password) 
+> **_NOTE:_** developed with ansible version ansible 2.10.5
+> **_NOTE:_** run playbook with -K (become root password)
 > **_NOTE:_** ensure ansible.cfg is configured properly
 
 ```
@@ -56,16 +57,28 @@ ansible.tk = task list
 ansible.tp = template
 ```
 
+
 ## Todo:
 - use "sshpass" to templating VM image
 - automation VM creation and setup
 - automation network and IP setup
 - automation ssh-copy-id
+- use jinja2 in manifest template
 
 
 ## Troubleshoot:
 1. When add worker node and get error message "/proc/sys/net/bridge/bridge-nf-call-iptables does not exist", load "br_netfilter" kernel module. 
 
+
+## Config Notes:
+```
+# metrics-server
+# run "docker run --rm k8s.gcr.io/metrics-server/metrics-server:v0.6.0 --help" to get config usage.
+--kubelet-use-node-status-port              Use the port in the node status. Takes precedence over --kubelet-port flag.
+--kubelet-port int                          The port to use to connect to Kubelets. (default 10250)
+--kubelet-insecure-tls                      Do not verify CA of serving certificates presented by Kubelets.  For testing purposes only.
+
+```
 
 ## Reference:
 https://computingforgeeks.com/deploy-kubernetes-cluster-on-ubuntu-with-kubeadm/

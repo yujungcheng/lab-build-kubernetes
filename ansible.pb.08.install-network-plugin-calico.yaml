@@ -1,4 +1,5 @@
 ---
+# todo: review tigera-operator and custom-resources, are they necessary?
 - name: Install Calico network plugin on master
   hosts: masters
   become: true
