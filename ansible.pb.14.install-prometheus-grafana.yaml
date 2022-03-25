@@ -1,0 +1,101 @@
+---
+- name: Install prometheus and grafana
+  hosts: master
+  tasks:
+  - name: check cluster info
+    ansible.builtin.command:
+      cmd: kubectl cluster-info
+    register: cluster_info
+
+  - name: print cluster info
+    ansible.builtin.debug:
+      msg: "{{ cluster_info.stdout }}"
+
+  - name: check if kube-prometheus already cloned
+    ansible.builtin.stat:
+      path: ~/kube-prometheus
+    register: kube_prometheus_cloned
+
+  # note: update the following task chdir if kube-prometheus name is different
+  - name: clone kube-prometheus project repository
+    ansible.builtin.command:
+      cmd: git clone {{ GIT_KUBE_PROMETHEUS_URL }}
+    when: not kube_prometheus_cloned.stat.exists
+
+  - name: git pull latest commits on kube-prometheus
+    ansible.builtin.command:
+      cmd: git pull
+      chdir: ~/kube-prometheus
+    when: kube_prometheus_cloned.stat.exists
+
+  - name: git checkout branch release-0.10
+    ansible.builtin.command:
+      cmd: git checkout release-0.10
+      chdir: ~/kube-prometheus
+    when: kube_prometheus_cloned.stat.exists
+
+  - name: get setup manifests file list
+    ansible.builtin.find:
+      path: ~/kube-prometheus/manifests/setup/
+      file_type: file
+      patterns: "*.yaml"
+    register: setup_manifests
+
+  # note: use "apply" for each manifest still get "metadata.annotations: Too long: must have at most 262144 bytes" error. instead, use replace here.
+  - name: create namespace and CustomResourceDefinitions
+    ansible.builtin.command:
+      cmd: kubectl replace -f {{ item.path }}
+      chdir: ~/kube-prometheus
+    with_items: "{{ setup_manifests.files }}"
+    register: create_kube_prometheus_namespace_resource_output
+
+  - name: print kube prometheus setup create output
+    ansible.builtin.debug:
+      msg: "{{ create_kube_prometheus_namespace_resource_output.results }}"
+
+  # note: use replace
+  - name: deploy prometheus monitoring stack
+    ansible.builtin.command:
+      cmd: kubectl replace -f manifests
+      chdir: ~/kube-prometheus
+    register: create_kube_prometheus_stack_output
+
+  - name: print kube prometheus stack create output
+    ansible.builtin.debug:
+      msg: "{{ create_kube_prometheus_stack_output.stdout }}"
+
+  - name: check monitoring namespace pods
+    ansible.builtin.command:
+      cmd: kubectl get pods --namespace monitoring -o wide
+    register: monitoring_pods
+
+  - name: wait 10 seconds for pods ready
+    ansible.builtin.pause:
+      seconds: 10
+
+  - name: print monitoring pods
+    ansible.builtin.debug:
+      msg: "{{ monitoring_pods.stdout }}"
+
+  - name: check monitoring namespace services
+    ansible.builtin.command:
+      cmd: kubectl get services --namespace monitoring -o wide
+    register: monitoring_services
+
+  - name: print monitoring services
+    ansible.builtin.debug:
+      msg: "{{ monitoring_services.stdout }}"
+  
+  - name: tips - kubectl port-forward for grafana dashboard on 3000
+    ansible.builtin.debug:
+      msg: 
+      - "kubectl --namespace monitoring port-forward svc/grafana --address='0.0.0.0' 3000"
+      - "default username/password: admin/admin"
+
+  - name: tips - kubectl port-forward for prometheus dashboard on port 9090
+    ansible.builtin.debug:
+      msg: "kubectl --namespace monitoring port-forward svc/prometheus-k8s --address='0.0.0.0' 9090"
+
+  - name: tips - kubectl port-forward for alart manager on port 9093
+    ansible.builtin.debug:
+      msg: "kubectl --namespace monitoring port-forward svc/alertmanager-main --address='0.0.0.0' 9093"

@@ -11,6 +11,12 @@
     ansible.builtin.debug:
       msg: "{{ join_worker_node_command.stdout }}"
 
+  # another way to store the command to a variable manually
+  - name: add join command to hostsvars
+    ansible.builtin.add_host:
+      name: JOIN_WORKER_NODE_COMMAND
+      cmd: "{{ join_worker_node_command.stdout }}"
+
 - name: Add worker nodes
   hosts: workers
   become: true
@@ -26,11 +32,16 @@
       cmd: "{{ hostvars['master']['join_worker_node_command'].stdout }}"
     register: join_worker_output
 
+#  - name: add worker node
+#    ansible.builtin.command:
+#      cmd: "{{ hostvars['JOIN_WORKER_NODE_COMMAND']['cmd'] }}"
+#    register: join_worker_output
+
   - name: print join worker output
     ansible.builtin.debug:
       msg: "{{ join_worker_output.stdout }}"
 
-- name: Cehckn worker nodes
+- name: Check worker nodes
   hosts: masters
   tasks:
   - name: get nodes status

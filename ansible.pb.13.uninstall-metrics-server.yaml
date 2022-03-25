@@ -1,0 +1,8 @@
+---
+- name: Delete Metrics Server
+  hosts: master
+  tasks:
+  - name: delete metrics server manifest
+    ansible.builtin.command:
+      cmd: kubectl delete -f /tmp/metrics-server-components.yaml
+

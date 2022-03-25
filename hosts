@@ -22,3 +22,5 @@ MANIFEST_TIGERA_OPERATOR_URL = 'https://docs.projectcalico.org/manifests/tigera-
 MANIFEST_CUSTOM_RESOURCES_URL = 'https://docs.projectcalico.org/manifests/custom-resources.yaml'
 MANIFEST_TEST_POD_URL = 'https://k8s.io/examples/pods/commands.yaml'
 MANIFEST_DASHBOARD_URL = 'https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended.yaml'
+
+GIT_KUBE_PROMETHEUS_URL = 'https://github.com/prometheus-operator/kube-prometheus.git'
