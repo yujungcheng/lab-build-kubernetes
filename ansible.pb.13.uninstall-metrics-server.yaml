@@ -4,5 +4,5 @@
   tasks:
   - name: delete metrics server manifest
     ansible.builtin.command:
-      cmd: kubectl delete -f /tmp/metrics-server-components.yaml
+      cmd: kubectl delete --ignore-not-found=true -f /tmp/metrics-server-components.yaml
 

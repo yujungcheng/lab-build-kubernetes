@@ -86,16 +86,27 @@
     ansible.builtin.debug:
       msg: "{{ monitoring_services.stdout }}"
   
-  - name: tips - kubectl port-forward for grafana dashboard on 3000
+  - name: tips - kubectl port-forward command for grafana dashboard on 3000
     ansible.builtin.debug:
       msg: 
       - "kubectl --namespace monitoring port-forward svc/grafana --address='0.0.0.0' 3000"
       - "default username/password: admin/admin"
 
-  - name: tips - kubectl port-forward for prometheus dashboard on port 9090
+  - name: tips - kubectl port-forward command for prometheus dashboard on port 9090
     ansible.builtin.debug:
       msg: "kubectl --namespace monitoring port-forward svc/prometheus-k8s --address='0.0.0.0' 9090"
 
-  - name: tips - kubectl port-forward for alart manager on port 9093
+  - name: tips - kubectl port-forward  for alart manager on port 9093
     ansible.builtin.debug:
       msg: "kubectl --namespace monitoring port-forward svc/alertmanager-main --address='0.0.0.0' 9093"
+
+  - name: tips - use NodePorts
+    ansible.builtin.debug:
+      msg: |
+        kubectl --namespace monitoring patch svc prometheus-k8s -p '{"spec": {"type": "NodePort"}}'
+        kubectl --namespace monitoring patch svc alertmanager-main -p '{"spec": {"type": "NodePort"}}'
+        kubectl --namespace monitoring patch svc grafana -p '{"spec": {"type": "NodePort"}}'
+  
+  - name: tip - check service NodePort command
+    ansible.builtin.debug:
+      msg: "kubectl -n monitoring get svc  | grep NodePort"

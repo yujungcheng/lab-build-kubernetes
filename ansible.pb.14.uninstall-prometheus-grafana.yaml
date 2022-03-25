@@ -6,12 +6,12 @@
   tasks:
   - name: delete prometheus monitoring stack
     ansible.builtin.command:
-      cmd: kubectl delete -f manifests
+      cmd: kubectl delete --ignore-not-found=true -f manifests
       chdir: ~/kube-prometheus
     register: create_kube_prometheus_stack_output
 
   - name: delete exist namespace and CustomResourceDefinitions
     ansible.builtin.command:
-      cmd: kubectl delete -f manifests/setup
+      cmd: kubectl delete --ignore-not-found=true -f manifests/setup
       chdir: ~/kube-prometheus
     ignore_errors: yes
