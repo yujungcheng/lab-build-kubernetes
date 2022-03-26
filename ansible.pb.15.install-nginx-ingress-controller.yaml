@@ -1,0 +1,162 @@
+---
+- name: Install nginx ingress controller
+  hosts: masters[0]
+  vars:
+    external_ips_patch: 'nginx-ingress-external-ips-patch.yaml'
+    node_selector_patch: 'nginx-ingress-node-selector-patch.yaml'
+    master_node_tolerations_patch: 'nginx-ingress-master-node-tolerations.yaml'
+  tasks:
+  - name: get latest nginx ingress controller tag name
+    ansible.builtin.shell: |
+      curl -s https://api.github.com/repos/kubernetes/ingress-nginx/releases/latest | grep tag_name | cut -d '"' -f 4
+    args:
+      warn: false
+    register: nginx_ingress_latest_tag
+    
+  - name: download nginx ingress controller deployment manifest
+    ansible.builtin.get_url:
+      url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/{{ nginx_ingress_latest_tag.stdout }}/deploy/static/provider/baremetal/deploy.yaml
+      dest: ./nginx-ingress-controller-deploy.yaml
+
+  - name: apply nginx ingress controller manifest
+    ansible.builtin.command:
+      cmd: kubectl apply -f nginx-ingress-controller-deploy.yaml
+    register: apply_nginx_ingress_controller_manifest_output
+
+  - name: print apply nginx ingress controller output
+    ansible.builtin.debug:
+      msg: "{{ apply_nginx_ingress_controller_manifest_output.stdout }}"
+
+  - name: wait 5 seconds for ingress nginx pods ready
+    ansible.builtin.pause:
+      seconds: 5
+      
+  - name: check ingress nginx pods
+    ansible.builtin.command:
+      cmd: kubectl get pods --namespace ingress-nginx -l app.kubernetes.io/name=ingress-nginx
+    register: ingress_nginx_pods_status
+
+  - name: print ingress nginx pods
+    ansible.builtin.debug:
+      msg: "{{ ingress_nginx_pods_status.stdout }}"
+
+  - name: check ingress nginx service
+    ansible.builtin.command:
+      cmd: kubectl get svc --namespace ingress-nginx ingress-nginx-controller
+    register: ingress_nginx_service_status
+
+  - name: print ingress nginx service
+    ansible.builtin.debug:
+      msg: "{{ ingress_nginx_service_status.stdout }}"
+
+  - name: copy external ips patch template file
+    ansible.builtin.template:
+      src: ansible.tp.nginx-ingress-external-ips-patch.yaml
+      dest: "{{ external_ips_patch }}"
+  
+  - name: update external ips patch file with external IPs
+    ansible.builtin.lineinfile:
+      path: "{{ external_ips_patch }}"
+      line: "  - {{ hostvars[item].ansible_host }}"
+    with_items: 
+    - "{{ groups['masters'] }}"
+
+  - name: apply external ips patch file
+    ansible.builtin.shell: |
+      kubectl --namespace ingress-nginx patch svc ingress-nginx-controller --patch "$(cat {{ external_ips_patch }})"
+    register: apply_external_ips_patch_output
+
+  - name: print apply external ips patch output
+    ansible.builtin.debug:
+      msg: "{{ apply_external_ips_patch_output.stdout }}"
+
+  - name: check patched ingress nginx service
+    ansible.builtin.command:
+      cmd: kubectl get svc --namespace ingress-nginx ingress-nginx-controller
+    register: ingress_nginx_service_status
+
+  - name: print patched ingress nginx service
+    ansible.builtin.debug:
+      msg: "{{ ingress_nginx_service_status.stdout }}" 
+
+  - name: check control plane nodes
+    ansible.builtin.command:
+      cmd: kubectl get nodes -l node-role.kubernetes.io/control-plane
+    register: controller_plan_nodes
+  
+  - name: print control plane nodes
+    ansible.builtin.debug:
+      msg: "{{ controller_plan_nodes.stdout }}"
+
+  - name: add labels "runingress=nginx" to master nodes
+    ansible.builtin.command:
+      cmd: kubectl label node {{ item }} runingress=nginx --overwrite=true
+    with_items: 
+    - "{{ groups['masters'] }}"
+
+  - name: check master node label
+    ansible.builtin.command:
+      cmd: kubectl describe node {{ item }}
+    with_items:
+    - "{{ groups['masters'] }}"
+    register: master_node_label
+
+  - name: print master node label
+    ansible.builtin.debug:
+      msg: "{{ item.stdout }}"
+    with_items: "{{ master_node_label.results }}"
+
+  - name: copy node selector patch template
+    ansible.builtin.template:
+      src: ansible.tp.nginx-ingress-node-selector-patch.yaml
+      dest: "{{ node_selector_patch }}"
+  
+  - name: apply node selector patch
+    ansible.builtin.shell: |
+      kubectl --namespace ingress-nginx patch deployment/ingress-nginx-controller --patch "$(cat {{ node_selector_patch }})"
+    register: apply_node_selector_patch_output
+
+  - name: print node selector patch output
+    ansible.builtin.debug:
+      msg: "{{ apply_node_selector_patch_output.stdout }}"
+
+  - name: check ingress-nginx deployment
+    ansible.builtin.command:
+      cmd: kubectl get deploy --namespace ingress-nginx
+    register: ingress_nginx_deployment
+  
+  - name: print ingress-nginx deployment
+    ansible.builtin.debug:
+      msg: "{{ ingress_nginx_deployment.stdout }}"
+
+  - name: copy master node toleration patch template
+    ansible.builtin.template:
+      src: ansible.tp.nginx-ingress-master-node-tolerations.yaml
+      dest: "{{ master_node_tolerations_patch }}"
+
+  - name: apply the master node tolerations patch
+    ansible.builtin.shell: |
+      kubectl --namespace ingress-nginx patch deployment/ingress-nginx-controller --patch "$(cat {{ master_node_tolerations_patch }})"
+    register: master_node_tolerations_output
+
+  - name: print master node tolerations patch output
+    ansible.builtin.debug:
+      msg: "{{ master_node_tolerations_output.stdout }}"
+
+  - name: check new pod created has node selector configured.
+    ansible.builtin.shell: |
+      kubectl get pods --namespace ingress-nginx | grep "^ingress-nginx-controller-" | cut -d' ' -f1
+    register: ingress_nginx_controller_name
+
+  - name: xxx
+    ansible.builtin.debug:
+      msg: "{{ ingress_nginx_controller_name.stdout }}"
+
+  - name: check ingress nginx controller pod
+    ansible.builtin.command:
+      cmd: kubectl describe pod {{ ingress_nginx_controller_name.stdout }} --namespace ingress-nginx 
+    register: ingress_nginx_controller_description
+
+  - name: print ingress nginx controller pod
+    ansible.builtin.debug:
+      msg: "{{ ingress_nginx_controller_description.stdout }}"
