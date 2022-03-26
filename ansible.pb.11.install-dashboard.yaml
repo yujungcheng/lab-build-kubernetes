@@ -2,7 +2,7 @@
 # if already deployed, dont want to re-deploy again.
 # although re-apply does not get issue, just try to skip it.
 - name: Install Kubernetes Dashboard
-  hosts: master
+  hosts: masters[0]
   vars:
     dashboard_yaml_file: "/tmp/dashboard.yaml"
     dashboard_flag_file: "/tmp/flag_dashboard"

@@ -13,7 +13,6 @@ OS: Ubuntu 20.04
 Username: ubuntu
 Network:
 - default, 192.168.122.0
-- _k8s_calico, no network address configured
 
 
 ## Create Ubuntu Template Image
@@ -77,6 +76,30 @@ ansible.tp = template
 --kubelet-use-node-status-port              Use the port in the node status. Takes precedence over --kubelet-port flag.
 --kubelet-port int                          The port to use to connect to Kubelets. (default 10250)
 --kubelet-insecure-tls                      Do not verify CA of serving certificates presented by Kubelets.  For testing purposes only.
+
+```
+
+## Knowledge Base:
+```
+# https://stackoverflow.com/questions/47241626/what-is-the-difference-between-kubectl-apply-and-kubectl-replace
+apply --force
+patch 422
+delete 200
+get 200
+get 200
+get 404
+post 201
+
+replace --force
+get 200
+delete 200
+get 404
+post 201
+
+# https://kubernetes.io/docs/reference/kubectl/kubectl/
+
+# https://prometheus-operator.dev/docs/prologue/quick-start/
+
 
 ```
 

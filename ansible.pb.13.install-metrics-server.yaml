@@ -1,6 +1,6 @@
 ---
 - name: Install Metrics Server
-  hosts: master
+  hosts: masters[0]
   tasks:
   - name: copy metrics server manifest
     ansible.builtin.template:

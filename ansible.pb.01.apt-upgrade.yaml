@@ -1,7 +1,6 @@
 ---
 - name: Get apt update and upgrade on all nodes
   hosts: all
-  remote_user: ubuntu
   become: true
   tasks:
   - name: apt update and safe upgrade

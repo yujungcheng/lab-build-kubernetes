@@ -1,7 +1,6 @@
 ---
 - name: Install CRI-O Runtime
   hosts: all
-  remote_user: ubuntu
   become: true
   tasks:
   #- name: ensure kernel modules loaded

@@ -1,6 +1,6 @@
 ---
 - name: Install prometheus and grafana
-  hosts: master
+  hosts: masters[0]
   tasks:
   - name: check cluster info
     ansible.builtin.command:

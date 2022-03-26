@@ -1,7 +1,6 @@
 ---
 - name: Configure system setting
   hosts: all
-  remote_user: ubuntu
   become: true
   tasks:
   - name: check fstab backup file

@@ -1,6 +1,6 @@
 ---
 - name: Delete Metrics Server
-  hosts: master
+  hosts: masters[0]
   tasks:
   - name: delete metrics server manifest
     ansible.builtin.command:

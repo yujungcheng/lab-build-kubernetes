@@ -1,6 +1,6 @@
 ---
 - name: Test application deployment
-  hosts: master
+  hosts: masters[0]
   tasks:
   - name: create test pod
     ansible.builtin.command:

@@ -1,6 +1,6 @@
 ---
 - name: Get token from single master node
-  hosts: master
+  hosts: masters[0]
   tasks:
   - name: get join command
     ansible.builtin.command:
@@ -42,7 +42,7 @@
       msg: "{{ join_worker_output.stdout }}"
 
 - name: Check worker nodes
-  hosts: masters
+  hosts: masters[0]
   tasks:
   - name: get nodes status
     ansible.builtin.command:

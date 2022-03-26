@@ -1,7 +1,6 @@
 ---
 - name: Install kubelet, kubeadm, kubectl
   hosts: all
-  remote_user: ubuntu
   become: true
   tasks:
   - name: update apt cache
@@ -35,9 +34,6 @@
     ansible.builtin.apt:
       state: present
       pkg:
-      - vim
-      - git
-      - wget
       - kubelet
       - kubeadm
       - kubectl
@@ -69,3 +65,17 @@
     ansible.builtin.debug:
       msg: "{{ ansible_facts.packages['kubectl'] }} version installed"
     when: "'kubectl' in ansible_facts.packages"
+
+- name: Install additional tools on masters
+  hosts: masters
+  become: true
+  tasks:
+  - name: install packages
+    ansible.builtin.apt:
+      state: present
+      pkg:
+      - vim
+      - git
+      - wget
+      - jq
+      - curl
