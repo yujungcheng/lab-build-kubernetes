@@ -1,0 +1,161 @@
+---
+- name: Deploy demo applicaiton which use nginx ingress
+  hosts: master
+  tasks:
+  - name: check ingress definition
+    ansible.builtin.command:
+      kubectl explain ingress
+    register: ingress_definition
+
+  - name: print ingress definition
+    ansible.builtin.debug:
+      msg: "{{ ingress_definition.stdout }}"
+
+  - name: create demo namespace
+    ansible.builtin.command:
+      cmd: kubectl create namespace demo
+    ignore_errors: yes
+
+# create demo application
+
+  - name: copy demo application pods and services manifest
+    ansible.builtin.template:
+      src: ansible.tp.demp-application.yaml
+      dest: demp-application.yaml
+
+  - name: apply demo application pods and services manifest
+    ansible.builtin.command:
+      cmd: kubectl apply -f demp-application.yaml --namespace demo
+
+  - name: check demo pods
+    ansible.builtin.command:
+      cmd: kubectl get pods --namespace demo
+    register: demo_pods
+
+  - name: print demo pods
+    ansible.builtin.debug:
+      msg: "{{ demo_pods.stdout }}"
+
+  - name: wiat 5 seconds
+    ansible.builtin.pause:
+      seconds: 5
+
+  - name: check demo apple-app logs
+    ansible.builtin.command:
+      cmd: kubectl --namespace demo logs apple-app
+    register: demo_apple_app_logs
+
+  - name: print demo apple-app logs
+    ansible.builtin.debug:
+      msg: "{{ demo_apple_app_logs.stdout }}"
+
+  - name: check demo banana-app logs
+    ansible.builtin.command:
+      cmd: kubectl --namespace demo logs banana-app
+    register: demo_banana_app_logs
+
+  - name: print demo banana-app logs
+    ansible.builtin.debug:
+      msg: "{{ demo_banana_app_logs.stdout }}"
+
+# create ubuntu pod as client for testing to the demo app.
+
+  - name: copy ubuntu pod manifest
+    ansible.builtin.template:
+      src: ansible.tp.demo-ubuntu-pod.yaml
+      dest: demo-ubuntu-pod.yaml
+
+  - name: apply ubuntu pod manifest
+    ansible.builtin.command:
+      cmd: kubectl --namespace demo apply -f demo-ubuntu-pod.yaml
+
+  - name: wiat 5 seconds
+    ansible.builtin.pause:
+      seconds: 5
+
+  - name: check ubuntu pod status
+    ansible.builtin.shell: |
+      kubectl --namespace demo get pods ubuntu
+    register: ubuntu_pod
+  
+  - name: print ubuntu pod status
+    ansible.builtin.debug:
+      msg: "{{ ubuntu_pod.stdout }}"
+
+  - name: apt update in the ubuntu pod
+    ansible.builtin.command:
+      cmd: kubectl --namespace demo exec ubuntu -- apt update
+  
+  - name: apt install curl in the ubuntu pod
+    ansible.builtin.command:
+      cmd: kubectl --namespace demo exec ubuntu -- apt install curl -y
+
+  - name: curl apple-service:5678 from ubuntu pod
+    ansible.builtin.command:
+      cmd: kubectl --namespace demo exec ubuntu -- curl apple-service:5678
+    register: curl_apple_service_output
+  
+  - name: curl banana-service:5678 from ubuntu pod
+    ansible.builtin.command:
+      cmd: kubectl --namespace demo exec ubuntu -- curl banana-service:5678
+    register: curl_banana_service_output
+  
+  - name: print curl apple and banana service output
+    ansible.builtin.debug:
+      msg: "{{ item }}"
+    with_items:
+    - "{{ curl_apple_service_output.stdout }}"
+    - "{{ curl_banana_service_output.stdout }}"
+
+# create ingress route. "/apple" to apple service, "/banana" to banana service.
+  - name: copy ingress route manifest
+    ansible.builtin.template:
+      src: ansible.tp.demo-ingress-route.yaml
+      dest: demo-ingress-route.yaml
+
+  - name: apply ingress route manifest
+    ansible.builtin.command:
+      cmd: kubectl --namespace demo apply -f demo-ingress-route.yaml
+    register: apply_demo_ingress_route_output
+  
+  - name: print ingress route manifest apply output
+    ansible.builtin.debug:
+      msg: "{{ apply_demo_ingress_route_output.stdout }}"
+
+  - name: check demo ingress route
+    ansible.builtin.command:
+      cmd: kubectl get ingress --namespace demo
+    register: demo_ingress_route
+
+  - name: print demo ingress route
+    ansible.builtin.debug:
+      msg: "{{ demo_ingress_route.stdout }}"
+  
+  - name: check nginx ingress controller pod
+    ansible.builtin.command:
+      cmd: kubectl get pods --namespace ingress-nginx
+    register: demo_ingress_nginx_controller
+
+  - name: print demo ingress nginx controller
+    ansible.builtin.debug:
+      msg: "{{ demo_ingress_nginx_controller.stdout }}"
+
+# tip - check demo ingress nginx controller
+# "kubectl exec -n ingress-nginx  -it ingress-nginx-controller-xxxxxxx -- /bin/bash"
+# "in the ingress nginx controller pod, cat /etc/nginx/nginx.conf"
+# 
+# bash-5.1$ cat /etc/nginx/nginx.conf | grep "location /apple"
+#		location /apple/ {
+# bash-5.1$ cat /etc/nginx/nginx.conf | grep "location /banana"
+#		location /banana/ {
+
+# "edit" /etc/hosts in "master" node, append "192.168.122.10 apple-banana.homelab.com"
+#
+# ubuntu@master:~$ cat /etc/hosts | grep 192.168.122.10
+# 192.168.122.10 k8s.homelab.com
+# 192.168.122.10 apple-banana.homelab.com
+# ubuntu@master:~$
+# ubuntu@master:~$ curl apple-banana.homelab.com/apple
+# apple
+# ubuntu@master:~$ curl apple-banana.homelab.com/banana
+# banana
