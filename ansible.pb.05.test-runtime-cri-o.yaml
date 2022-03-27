@@ -31,12 +31,12 @@
   - name: copy pod network config file
     ansible.builtin.template:
       src: ansible.tp.crio.pod-network.json
-      dest: /tmp/crio.pod-network.json
+      dest: crio.pod-network.json
 
   - name: copy pod nginx config file
     ansible.builtin.template:
       src: ansible.tp.crio.pod-nginx.json
-      dest: /tmp/crio.pod-nginx.json
+      dest: crio.pod-nginx.json
 
   - name: call get-pod-id tasks
     include_tasks: "ansible.tk.get-pod-id.yaml"
@@ -55,12 +55,12 @@
   
   - name: execcute crictl runp ansible.tp.crio.pod-network.json
     ansible.builtin.shell: |
-      crictl runp /tmp/crio.pod-network.json
+      crictl runp crio.pod-network.json
 
   - name: call get-pod-id tasks again
     include_tasks: "ansible.tk.get-pod-id.yaml"
 
   - name: run crictl create pod-network and pod-nginx
     ansible.builtin.shell: |
-      crictl create {{ fact_pod_id }} /tmp/crio.pod-nginx.json /tmp/crio.pod-network.json
+      crictl create {{ fact_pod_id }} crio.pod-nginx.json crio.pod-network.json
     when: fact_pod_id is defined

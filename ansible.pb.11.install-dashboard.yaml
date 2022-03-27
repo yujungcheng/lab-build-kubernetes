@@ -4,8 +4,8 @@
 - name: Install Kubernetes Dashboard
   hosts: masters[0]
   vars:
-    dashboard_yaml_file: "/tmp/dashboard.yaml"
-    dashboard_flag_file: "/tmp/flag_dashboard"
+    dashboard_yaml_file: "./dashboard.yaml"
+    dashboard_flag_file: "./flag_dashboard"
   tasks:
   - name: check dashboard flag file
     ansible.builtin.stat:
@@ -63,11 +63,11 @@
   - name: copy dashboard node port patch file which expose the service on static port 32000
     ansible.builtin.template:
       src: ansible.tp.dashboard.nodeport-patch.yaml
-      dest: /tmp/dashboard.nodeport-patch.yaml
+      dest: dashboard.nodeport-patch.yaml
 
   - name: apply dashboard node patch file
     ansible.builtin.shell: |
-      kubectl --namespace kubernetes-dashboard patch service kubernetes-dashboard --patch "$(cat /tmp/dashboard.nodeport-patch.yaml)"
+      kubectl --namespace kubernetes-dashboard patch service kubernetes-dashboard --patch "$(cat dashboard.nodeport-patch.yaml)"
 
   - name: check dashboard deployment status
     ansible.builtin.command:
