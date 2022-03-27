@@ -55,6 +55,10 @@
   # sysctl: setting key "net.ipv4.conf.all.promote_secondaries": Invalid argument
   # ref. https://github.com/systemd/systemd/issues/17156
 
+  - name: stop ufw
+    ansible.builtin.command:
+      cmd: systemctl stop ufw.service
+
   - name: disable ufw
     ansible.builtin.shell: |
       ufw disable
