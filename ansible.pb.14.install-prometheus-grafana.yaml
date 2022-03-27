@@ -34,29 +34,36 @@
       chdir: ~/kube-prometheus
     when: kube_prometheus_cloned.stat.exists
 
-  - name: get setup manifests file list
-    ansible.builtin.find:
-      path: ~/kube-prometheus/manifests/setup/
-      file_type: file
-      patterns: "*.yaml"
-    register: setup_manifests
+#  - name: get setup manifests file list
+#    ansible.builtin.find:
+#      path: ~/kube-prometheus/manifests/setup/
+#      file_type: file
+#      patterns: "*.yaml"
+#    register: setup_manifests
 
   # note: use "apply" for each manifest still get "metadata.annotations: Too long: must have at most 262144 bytes" error. instead, use replace here.
+#  - name: create namespace and CustomResourceDefinitions
+#    ansible.builtin.command:
+#      cmd: kubectl replace -f {{ item.path }}
+#      chdir: ~/kube-prometheus
+#    with_items: "{{ setup_manifests.files }}"
+#    register: create_kube_prometheus_namespace_resource_output
+
   - name: create namespace and CustomResourceDefinitions
     ansible.builtin.command:
-      cmd: kubectl replace -f {{ item.path }}
+      cmd: kubectl create -f manifests/setup
       chdir: ~/kube-prometheus
-    with_items: "{{ setup_manifests.files }}"
     register: create_kube_prometheus_namespace_resource_output
+    ignore_errors: yes
 
   - name: print kube prometheus setup create output
     ansible.builtin.debug:
-      msg: "{{ create_kube_prometheus_namespace_resource_output.results }}"
+      msg: "{{ create_kube_prometheus_namespace_resource_output.stdout }}"
 
   # note: use replace
   - name: deploy prometheus monitoring stack
     ansible.builtin.command:
-      cmd: kubectl replace -f manifests
+      cmd: kubectl create -f manifests
       chdir: ~/kube-prometheus
     register: create_kube_prometheus_stack_output
 

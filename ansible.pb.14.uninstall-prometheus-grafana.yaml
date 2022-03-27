@@ -1,7 +1,7 @@
 ---
 # todo: delete prometheus impacts metrics server.
 # check why and how to solve
-- name: Install prometheus and grafana
+- name: Uninstall prometheus and grafana
   hosts: masters[0]
   tasks:
   - name: delete prometheus monitoring stack
