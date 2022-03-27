@@ -69,9 +69,9 @@
     ansible.builtin.command:
       cmd: kubectl --namespace demo apply -f demo-ubuntu-pod.yaml
 
-  - name: wiat 5 seconds
+  - name: wiat 20 seconds
     ansible.builtin.pause:
-      seconds: 5
+      seconds: 20
 
   - name: check ubuntu pod status
     ansible.builtin.shell: |
@@ -88,7 +88,7 @@
   
   - name: apt install curl in the ubuntu pod
     ansible.builtin.command:
-      cmd: kubectl --namespace demo exec ubuntu -- apt install curl -y
+      cmd: kubectl --namespace demo exec ubuntu -- apt install curl net-tools iproute2 iputils-ping -y
 
   - name: curl apple-service:5678 from ubuntu pod
     ansible.builtin.command:
