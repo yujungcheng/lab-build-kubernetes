@@ -36,6 +36,16 @@ network:
       dhcp-identifier: mac
       link-local: []
   version: 2
+
+# 3. disable auto update/upgrade
+$ vim /etc/apt/apt.conf.d/20auto-upgrades
+
+# edit file with content below
+APT::Periodic::Update-Package-Lists "0";
+APT::Periodic::Download-Upgradeable-Packages "0";
+APT::Periodic::AutocleanInterval "0";
+APT::Periodic::Unattended-Upgrade "1";
+
 ```
 
 
