@@ -5,11 +5,11 @@
   - name: copy metrics server manifest
     ansible.builtin.template:
       src: ansible.tp.metrics-server-components.yaml
-      dest: /tmp/metrics-server-components.yaml
+      dest: metrics-server-components.yaml
 
   - name: apply metrics server manifest
     ansible.builtin.command:
-      cmd: kubectl apply -f /tmp/metrics-server-components.yaml
+      cmd: kubectl apply -f metrics-server-components.yaml
     register: metrics_server_apply_output
 
   - name: print apply metrics server manifest output
