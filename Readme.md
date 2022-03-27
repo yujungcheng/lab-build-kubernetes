@@ -79,6 +79,7 @@ ansible.tp = template
 
 ```
 
+
 ## Knowledge Base:
 ```
 # https://stackoverflow.com/questions/47241626/what-is-the-difference-between-kubectl-apply-and-kubectl-replace
@@ -100,8 +101,8 @@ post 201
 
 # https://prometheus-operator.dev/docs/prologue/quick-start/
 
-
 ```
+
 
 ## Reference:
 https://computingforgeeks.com/deploy-kubernetes-cluster-on-ubuntu-with-kubeadm/
