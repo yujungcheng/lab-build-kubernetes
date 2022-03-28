@@ -1,7 +1,6 @@
 #!/bin/bash
 
-prefix='k8s'
-hosts=("master" "node1" "node2" "node3")
+source ./virsh.cluster.info
 
 for name in ${hosts[@]}; do
   virsh shutdown ${prefix}-${name}

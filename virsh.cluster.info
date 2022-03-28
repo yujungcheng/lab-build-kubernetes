@@ -1,0 +1,24 @@
+#!/bin/bash
+
+prefix='k8s'
+hosts=("master" "node1" "node2" "node3")
+vm_ips=("192.168.122.10" "192.168.122.11" "192.168.122.12" "192.168.122.13")
+
+
+declare -A k8s_node_mac
+declare -A k8s_node_ip
+declare k8s_node
+count=0
+for vm in "${hosts[@]}"; do
+  name="${prefix}-${vm}"
+  mac=$(virsh dumpxml "${name}" | grep 'mac address' | grep -oP "(?<=').*?(?=')" | head -n 1)
+
+  k8s_node_mac[${name}]=${mac}
+  k8s_node_ip[${name}]=${vm_ips[${count}]}
+
+  count=$((count+1))
+done
+
+echo "=> Source host MAC: ${k8s_node_mac[@]}"
+echo "=> Source host IP: ${k8s_node_ip[@]}"
+echo 
