@@ -1,18 +1,22 @@
 ## Build Kubernetes Home Lab
 Ansible playbooks and scripts to build kubernetes vm cluster in my home lab.
+
+I follow the installation guide "deploy-kubernetes-cluster-on-ubuntu-with-kubeadm" and and write up them into Ansible playbooks. This allows me to simply re-build the cluster. 
+
+The guides have few unclear steps and conflicts and still have to consolidate the playbooks for automation as possible.
+
 The kubernetes cluster includes 1 master node and 3 worker nodes.
 
 
 ## Node Spec.
-- VM: k8s-master, hostname=master, vCPU=2, Ram=4G, Disk=16G
+- VM: k8s-master, hostname=master, vCPU=2, Ram=8G, Disk=16G
 - VM: k8s-node1, hostname=worker-1, vCPU=2, Ram=4G, Disk=16G
 - VM: k8s-node2, hostname=worker-2, vCPU=2, Ram=4G, Disk=16G
 - VM: k8s-node3, hostname=worker-3, vCPU=2, Ram=4G, Disk=16G
 
-OS: Ubuntu 20.04
-Username: ubuntu
-Network:
-- default, 192.168.122.0
+- OS: Ubuntu 20.04
+- Username: ubuntu
+- Network: default network, 192.168.122.0
 
 
 ## Create Ubuntu Template Image
@@ -77,6 +81,9 @@ ansible.tp = template
 
 ## Troubleshoot:
 1. When add worker node and get error message "/proc/sys/net/bridge/bridge-nf-call-iptables does not exist", load "br_netfilter" kernel module. 
+2. It seems like metric server and prometheus conflict each other, have to investigate their manifests.
+3. When tried to delete tigera operator namespace, it stuck in "Terminating" status which is due to "metric server" issue. This need further investigation.
+4. Had DNS issue inside pods. The pods count not reach kube-dns services. Didn't spent much time to troubleshoot it, so simply restart whole cluster and issue fixed.
 
 
 ## Config Notes:
