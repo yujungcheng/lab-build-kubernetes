@@ -62,3 +62,16 @@
   - name: disable ufw
     ansible.builtin.shell: |
       ufw disable
+
+  - name: set kernel modules br_netfilter to be loaded at boot time
+    ansible.builtin.shell: |
+      echo "br_netfilter" > /etc/modules-load.d/kubernetes.conf
+
+  - name: check product uuid
+    ansible.builtin.command:
+      cmd: cat /sys/class/dmi/id/product_uuid
+    register: product_uuid
+
+  - name: print product uuid (product uuid should be unique to every node)
+    ansible.builtin.debug:
+      msg: "{{ product_uuid.stdout }}"
