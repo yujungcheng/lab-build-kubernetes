@@ -88,7 +88,7 @@
   
   - name: apt install curl in the ubuntu pod
     ansible.builtin.command:
-      cmd: kubectl --namespace demo exec ubuntu -- apt install curl net-tools iproute2 iputils-ping -y
+      cmd: kubectl --namespace demo exec ubuntu -- env DEBIAN_FRONTEND=noninteractive apt install curl net-tools iproute2 iputils-ping nmap dnsutils -y
 
   - name: curl apple-service:5678 from ubuntu pod
     ansible.builtin.command:

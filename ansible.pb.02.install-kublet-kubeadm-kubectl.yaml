@@ -66,6 +66,14 @@
       msg: "{{ ansible_facts.packages['kubectl'] }} version installed"
     when: "'kubectl' in ansible_facts.packages"
 
+  - name: install network tools
+    ansible.builtin.apt:
+      state: present
+      pkg:
+      - net-tools
+      - bridge-utils
+      - ethtool
+
 - name: Install additional tools on masters
   hosts: masters
   become: true
