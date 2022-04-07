@@ -1,11 +1,11 @@
 ## Build Kubernetes Home Lab
-Ansible playbooks and scripts to build kubernetes vm cluster in my home lab.
+Ansible playbooks and scripts to build kubernetes vm cluster home lab.
 
-I follow the installation guide "deploy-kubernetes-cluster-on-ubuntu-with-kubeadm" and and write up them into Ansible playbooks. This allows me to simply re-build the cluster. 
+Follow the installation guide "deploy-kubernetes-cluster-on-ubuntu-with-kubeadm" and and make steps into Ansible playbooks. This allows simplifying and re-build the cluster.
 
 The guides have few unclear steps and conflicts and still have to consolidate the playbooks for automation as possible.
 
-The kubernetes cluster includes 1 master node and 3 worker nodes.
+The kubernetes cluster includes 1 master node and 3 worker nodes and is for learning purpose.
 
 
 ## Node Spec.
