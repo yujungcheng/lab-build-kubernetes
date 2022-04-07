@@ -58,9 +58,10 @@ APT::Periodic::Unattended-Upgrade "1";
 # Run playbook command
 $ ansible-playbook <playbook filename> -K 
 ``` 
-> **_NOTE:_** developed with ansible version ansible 2.10.5
-> **_NOTE:_** run playbook with -K (become root password)
-> **_NOTE:_** ensure ansible.cfg is configured properly
+> **_NOTE:_** developed with ansible version ansible 2.10.5 
+> **_NOTE:_** run playbook with -K (become root password) up to pb.09
+> **_NOTE:_** run playbook without -K from pb.10
+> **_NOTE:_** ensure ansible.cfg is configured properly 
 
 ```
 # ansible files naming
@@ -72,7 +73,6 @@ ansible.tp = template
 
 
 ## Todo:
-- use "sshpass" to templating VM image
 - automation VM creation and setup
 - automation network and IP setup
 - automation ssh-copy-id
