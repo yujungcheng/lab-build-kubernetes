@@ -1,0 +1,105 @@
+---
+# nfs server on master, nfs client on workers
+- name: Setup NFS server in master for persistent volume
+  hosts: masters[0]
+  become: true
+  tasks:
+  - name: update apt cache
+    ansible.builtin.apt:
+      update_cache: yes
+    ignore_errors: yes
+
+  - name: install nfs server
+    ansible.builtin.apt:
+      state: present
+      pkg:
+      - nfs-kernel-server
+
+  - name: create nfs share folder
+    ansible.builtin.file:
+      path: "{{ NFS_SHARE_DIR }}"
+      state: directory
+      mode: "{{ NFS_SHARE_DIR_PERMISSION }}"
+      owner: "{{ NFS_SHARE_DIR_OWNER }}"
+      group: "{{ NFS_SHARE_DIR_GROUP }}"
+
+  - name: test
+    ansible.builtin.debug:
+      msg: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['network'] }}"
+  - name: create nfs export file
+    ansible.builtin.lineinfile:
+      path: /etc/exports
+      line: "{{ NFS_SHARE_DIR }} {{ hostvars[inventory_hostname]['ansible_default_ipv4']['network'] }}/24(rw,sync,no_subtree_check)"
+  
+  - name: export nfs
+    ansible.builtin.command:
+      cmd: exportfs -a
+
+  - name: restart nfs server
+    ansible.builtin.service:
+      name: nfs-kernel-server
+      state: restarted
+
+  - name: check rpcinfo
+    ansible.builtin.command:
+      cmd: "rpcinfo -p {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    register: nfs_rpcinfo
+  
+  - name: print rpcinfo
+    ansible.builtin.debug:
+      msg: "{{ nfs_rpcinfo.stdout }}"
+
+- name: Setup nfs cleint on workers
+  hosts: workers
+  become: true
+  tasks:
+  - name: update apt cache
+    ansible.builtin.apt:
+      update_cache: yes
+    ignore_errors: yes
+
+  - name: install nfs common
+    ansible.builtin.apt:
+      state: present
+      pkg: 
+      - nfs-common
+      - nfs4-acl-tools
+
+  - name: check nfs export
+    ansible.builtin.command:
+      cmd: "showmount -e {{ hostvars['master']['ansible_default_ipv4']['address'] }}"
+    register: nfs_export
+
+  - name: print nfs export
+    ansible.builtin.debug:
+      msg: "{{ nfs_export.stdout }}"
+
+  - name: check nfs mount dir exist
+    ansible.builtin.stat:
+      path: "{{ NFS_SHARE_MOUNT_DIR }}"
+    register: nfs_mount_dir  
+
+  - name: create nfs mount dir
+    ansible.builtin.file:
+      path: "{{ NFS_SHARE_MOUNT_DIR }}"
+      state: directory
+      owner: root
+      group: root
+    when: not nfs_mount_dir.stat.exists
+
+  - name: mount nfs share
+    ansible.posix.mount:
+      src: "{{ hostvars['master']['ansible_default_ipv4']['address'] }}:{{ NFS_SHARE_DIR }}"
+      path: "{{ NFS_SHARE_MOUNT_DIR }}"
+      fstype: nfs
+      opts: "rw,sync"
+      state: mounted
+  
+  - name: check nfs mount
+    ansible.builtin.command:
+      cmd: mount --type nfs4
+    register: nfs4_mount
+
+  - name: print nfs mount
+    ansible.builtin.debug:
+      msg: "{{ nfs4_mount.stdout }}"
