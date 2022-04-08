@@ -25,8 +25,8 @@ MANIFEST_DASHBOARD_URL = 'https://raw.githubusercontent.com/kubernetes/dashboard
 
 GIT_KUBE_PROMETHEUS_URL = 'https://github.com/prometheus-operator/kube-prometheus.git'
 
-NFS_SHARE_DIR = '/mnt/nfs_share'
+NFS_SHARE_DIR = '/mnt/nfs'
 NFS_SHARE_DIR_OWNER = 'nobody'
 NFS_SHARE_DIR_GROUP = 'nogroup'
 NFS_SHARE_DIR_PERMISSION = '0777'
-NFS_SHARE_MOUNT_DIR = '/mnt/nfs_data'
+NFS_SHARE_MOUNT_DIR = '/mnt/nfs'

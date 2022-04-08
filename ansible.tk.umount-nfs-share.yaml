@@ -1,0 +1,12 @@
+---
+- name: check if nfs share mounted or not
+  ansible.builtin.shell: |
+    mount | awk '{if ($3 == "{{ NFS_SHARE_MOUNT_DIR }}") {exit 0}} ENDFILE {exit 1}'
+  register: nfs_mounted
+  ignore_errors: yes
+
+- name: umount if its mounted
+  ansible.builtin.mount:
+    path: "{{ NFS_SHARE_MOUNT_DIR }}"
+    state: unmounted
+  when: nfs_mounted.rc == 0

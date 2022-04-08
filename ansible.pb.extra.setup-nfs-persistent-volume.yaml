@@ -18,18 +18,22 @@
 
   - name: create nfs share folder
     ansible.builtin.file:
-      path: "{{ NFS_SHARE_DIR }}"
+      path: "{{ NFS_SHARE_DIR }}/{{ item }}"
       state: directory
       mode: "{{ NFS_SHARE_DIR_PERMISSION }}"
       owner: "{{ NFS_SHARE_DIR_OWNER }}"
       group: "{{ NFS_SHARE_DIR_GROUP }}"
+    with_items:
+    - "database"
 
   - name: create nfs export file
     ansible.builtin.lineinfile:
       path: /etc/exports
-      regexp: "^{{ NFS_SHARE_DIR }} "
-      line: "{{ NFS_SHARE_DIR }} {{ hostvars[inventory_hostname]['ansible_default_ipv4']['network'] }}/24(rw,sync,no_root_squash,no_subtree_check)"
-  
+      regexp: "^{{ NFS_SHARE_DIR }}/{{ item }}"
+      line: "{{ NFS_SHARE_DIR }}/{{ item }} {{ hostvars[inventory_hostname]['ansible_default_ipv4']['network'] }}/24(rw,sync,no_root_squash,no_subtree_check)"
+    with_items:
+    - "database"
+
   - name: export nfs
     ansible.builtin.command:
       cmd: exportfs -a
@@ -86,17 +90,8 @@
       group: root
     when: not nfs_mount_dir.stat.exists
 
-  - name: check if nfs share mounted or not
-    ansible.builtin.shell: |
-      mount | awk '{if ($3 == "{{ NFS_SHARE_MOUNT_DIR }}") {exit 0}} ENDFILE {exit 1}'
-    register: nfs_mounted
-    ignore_errors: yes
-
-  - name: umount if its mounted
-    ansible.builtin.mount:
-      path: "{{ NFS_SHARE_MOUNT_DIR }}"
-      state: unmounted
-    when: nfs_mounted.rc == 0
+  - name: umount nfs share
+    include_tasks: "ansible.tk.umount-nfs-share.yaml"
 
   - name: mount nfs share
     ansible.posix.mount:
@@ -104,7 +99,7 @@
       path: "{{ NFS_SHARE_MOUNT_DIR }}"
       fstype: nfs
       opts: "rw,sync"
-      state: mounted  # or simply use "remounted"
+      state: mounted  # or simply use "remounted" and remove umount tasks.
   
   - name: check nfs mount
     ansible.builtin.command:
@@ -114,3 +109,6 @@
   - name: print nfs mount
     ansible.builtin.debug:
       msg: "{{ nfs4_mount.stdout }}"
+
+  - name: umount nfs share
+    include_tasks: "ansible.tk.umount-nfs-share.yaml"
