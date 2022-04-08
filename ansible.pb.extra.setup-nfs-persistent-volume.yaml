@@ -6,7 +6,7 @@
   tasks:
   - name: update apt cache
     ansible.builtin.apt:
-      update_cache: yes
+      update_cache: no
     ignore_errors: yes
 
   - name: install nfs server
@@ -23,13 +23,11 @@
       owner: "{{ NFS_SHARE_DIR_OWNER }}"
       group: "{{ NFS_SHARE_DIR_GROUP }}"
 
-  - name: test
-    ansible.builtin.debug:
-      msg: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['network'] }}"
   - name: create nfs export file
     ansible.builtin.lineinfile:
       path: /etc/exports
-      line: "{{ NFS_SHARE_DIR }} {{ hostvars[inventory_hostname]['ansible_default_ipv4']['network'] }}/24(rw,sync,no_subtree_check)"
+      regexp: "^{{ NFS_SHARE_DIR }} "
+      line: "{{ NFS_SHARE_DIR }} {{ hostvars[inventory_hostname]['ansible_default_ipv4']['network'] }}/24(rw,sync,no_root_squash,no_subtree_check)"
   
   - name: export nfs
     ansible.builtin.command:
@@ -87,13 +85,25 @@
       group: root
     when: not nfs_mount_dir.stat.exists
 
+  - name: check if nfs share mounted or not
+    ansible.builtin.shell: |
+      mount | awk '{if ($3 == "{{ NFS_SHARE_MOUNT_DIR }}") {exit 0}} ENDFILE {exit 1}'
+    register: nfs_mounted
+    ignore_errors: yes
+
+  - name: umount if its mounted
+    ansible.builtin.mount:
+      path: "{{ NFS_SHARE_MOUNT_DIR }}"
+      state: unmounted
+    when: nfs_mounted.rc == 0
+
   - name: mount nfs share
     ansible.posix.mount:
       src: "{{ hostvars['master']['ansible_default_ipv4']['address'] }}:{{ NFS_SHARE_DIR }}"
       path: "{{ NFS_SHARE_MOUNT_DIR }}"
       fstype: nfs
       opts: "rw,sync"
-      state: mounted
+      state: mounted  # or simply use "remounted"
   
   - name: check nfs mount
     ansible.builtin.command:
