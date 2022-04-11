@@ -71,6 +71,24 @@ ansible.tk = task list
 ansible.tp = template
 ```
 
+## Dashboard
+```
+# check the kubernetes-dashboard is NodePort type and port number
+ubuntu@master:~$ kubectl get svc -n kubernetes-dashboard
+NAME                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)         AGE
+dashboard-metrics-scraper   ClusterIP   10.110.208.21   <none>        8000/TCP        14d
+kubernetes-dashboard        NodePort    10.98.33.243    <none>        443:32000/TCP   14d
+
+# create ssh port forward to access dashboard
+# 1. [local client - nuc8 ] -> [lab-node - nuc10] -> [kubernetes master - 192.168.122.10]
+nuc8~$ ssh -N -L 32000:192.168.122.10:32000 nuc10
+
+# 2. open url in firefox
+https://localhost:32000
+
+# 3. use the token from the playbook 11 run output to access dashboard
+```
+
 
 ## Todo:
 - automation VM creation and setup
