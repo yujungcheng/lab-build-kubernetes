@@ -136,6 +136,15 @@ post 201
 
 # https://prometheus-operator.dev/docs/prologue/quick-start/
 
+
+# to allow ping in container, the container has to enable privilege in spec.
+
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      privileged: true
+
+Example: "ansible.tp.demo-ubuntu-pod.yaml"
 ```
 
 
