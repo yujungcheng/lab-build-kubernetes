@@ -145,6 +145,9 @@ post 201
       privileged: true
 
 Example: "ansible.tp.demo-ubuntu-pod.yaml"
+
+# remove unused image
+$ crictl rmi --prune
 ```
 
 
