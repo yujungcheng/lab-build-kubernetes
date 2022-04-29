@@ -1,0 +1,10 @@
+---
+# this playbook install ceph-csi driver for RBD
+- name: Setup Ceph CSI RBD driver
+  hosts: masters[0]
+  gather_facts: false
+  any_errors_fatal: true
+  gather_subset: 
+    - min
+  roles:
+    - k8s-ceph-csi-rbd

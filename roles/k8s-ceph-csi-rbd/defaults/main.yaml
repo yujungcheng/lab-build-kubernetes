@@ -1,0 +1,12 @@
+---
+CEPH_CSI_REPO_URL: 'https://github.com/ceph/ceph-csi.git'
+CEPH_CSI_BRANCH: 'release-v3.6'
+
+CEPH_CLUSTER_FSID: ''
+CEPH_CLIENT_USER: ''
+CEPH_CLIENT_USER_KEY: ''
+CEPH_MONITOR_IP_PORT:
+- '192.168.122.xxx:6789'
+
+KUBERNETES_CEPH_NAMESPACE: ''
+KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR: '~/ceph-csi-deploy-rbd'
