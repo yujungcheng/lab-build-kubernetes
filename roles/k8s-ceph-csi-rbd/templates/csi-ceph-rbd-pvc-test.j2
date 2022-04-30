@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ RESOURCE_CEPH_CSI_PVC_TEST_NAME }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: {{ KUBERNETES_CEPH_CSI_CLASS_STORAGE_NAME }}

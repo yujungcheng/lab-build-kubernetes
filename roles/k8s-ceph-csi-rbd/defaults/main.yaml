@@ -1,11 +1,14 @@
 ---
+# update this file to fit your environment.
+
+# Ceph CSI Repo
 CEPH_CSI_REPO_URL: 'https://github.com/ceph/ceph-csi.git'
 CEPH_CSI_BRANCH: 'release-v3.6'
 
 # Ceph variables
 CEPH_CLUSTER_FSID: 'b25ef344-c62a-11ec-a3e0-4f9f42678996'
 CEPH_CLIENT_USER: 'admin'
-CEPH_CLIENT_USER_KEY: 'AQCFW2FioDNLFhAAIHwffgelauUdN/QRpjeX4w=='
+CEPH_CLIENT_USER_KEY: 'AQD1P2li2KYyJBAANKsPT3eGxS+vuRQvu6YLPQ=='
 CEPH_MONITOR_IP_PORT:
 - '192.168.122.90:6789'
 
@@ -26,3 +29,4 @@ RESOURCE_CEPH_CSI_NAMESPACE_NAME: 'ceph-csi-aio'
 RESOURCE_CEPH_CSI_CEPH_CONFIG_NAME: 'ceph-config'
 RESOURCE_CEPH_CSI_CONFIG_MAP_NAME: 'ceph-csi-config'
 RESOURCE_CEPH_CSI_SECRET: 'ceph-csi-rbd-secret'
+RESOURCE_CEPH_CSI_PVC_TEST_NAME: 'ceph-csi-rbd-pvc-test'

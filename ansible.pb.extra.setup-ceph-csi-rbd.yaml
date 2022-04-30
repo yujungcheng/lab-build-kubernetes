@@ -8,3 +8,4 @@
     - min
   roles:
     - k8s-ceph-csi-rbd
+    
