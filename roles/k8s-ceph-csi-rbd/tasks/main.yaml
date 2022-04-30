@@ -11,7 +11,7 @@
     dest: "/tmp/ceph-csi/"
     version: "{{ CEPH_CSI_BRANCH }}"
     depth: 1
-  tags:
+#  tags:
 #  - never  # skip this task
 
 - name: copy deploy rbd plugin manifest
@@ -19,7 +19,7 @@
     remote_src: yes
     src: "/tmp/ceph-csi/deploy/rbd/kubernetes/"
     dest: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"
-  tags:
+#  tags:
 #  - never  # skip this task
 
 - name: copy namespace manifest
@@ -71,7 +71,7 @@
 # todo: break into multi tasks using register and when condition and use replace module
 - name: update namespace to current deploy rbd plugin manifest
   ansible.builtin.shell:
-    cmd: 'sed -i "s/namespace: default/namespace: {{ KUBERNETES_CEPH_NAMESPACE }}/g" $(grep -rl "namespace: default" ./)'
+    cmd: 'sed -i "s/namespace: default/namespace: {{ RESOURCE_CEPH_CSI_NAMESPACE_NAME }}/g" $(grep -rl "namespace: default" ./)'
     chdir: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"
   when: default_namespace_count.stdout != "0"
   ignore_errors: True
@@ -104,4 +104,14 @@
 - name: create rbdplugin
   ansible.builtin.command:
     cmd: kubectl apply -f csi-rbdplugin.yaml
+    chdir: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"
+
+- name: copy storage class manifest
+  ansible.builtin.template:
+    src: csi-storage-class.j2
+    dest: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}/csi-storage-class.yaml"
+
+- name: create ceph csi rbd storage class
+  ansible.builtin.command:
+    cmd: kubectl apply -f csi-storage-class.yaml
     chdir: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"

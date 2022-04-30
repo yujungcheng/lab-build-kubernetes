@@ -1,0 +1,21 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+   name: {{ KUBERNETES_CEPH_CSI_CLASS_STORAGE_NAME }}
+provisioner: {{ KUBERNETES_CEPH_CSI_CLASS_STORAGE_PROVISIONER }}
+parameters:
+   clusterID: {{ CEPH_CLUSTER_FSID }}
+   pool: {{ KUBERNETES_CEPH_CSI_CLASS_STORAGE_POOL_NAME }}
+   imageFeatures: {{ KUBERNETES_CEPH_CSI_CLASS_STORAGE_IMAGE_FEATURES }}
+   csi.storage.k8s.io/provisioner-secret-name: {{ RESOURCE_CEPH_CSI_SECRET }}
+   csi.storage.k8s.io/provisioner-secret-namespace: {{ RESOURCE_CEPH_CSI_NAMESPACE_NAME }}
+   csi.storage.k8s.io/controller-expand-secret-name: {{ RESOURCE_CEPH_CSI_SECRET }}
+   csi.storage.k8s.io/controller-expand-secret-namespace: {{ RESOURCE_CEPH_CSI_NAMESPACE_NAME }}
+   csi.storage.k8s.io/node-stage-secret-name: {{ RESOURCE_CEPH_CSI_SECRET }}
+   csi.storage.k8s.io/node-stage-secret-namespace: {{ RESOURCE_CEPH_CSI_NAMESPACE_NAME }}
+   csi.storage.k8s.io/fstype: {{ KUBERNETES_CEPH_CSI_CLASS_STORAGE_FSTYPE }}
+reclaimPolicy: {{ KUBERNETES_CEPH_CSI_CLASS_STORAGE_RECLAIM_POLICY }}
+allowVolumeExpansion: {{ KUBERNETES_CEPH_CSI_CLASS_STORAGE_ALLOW_VOLUME_EXPANSION }}
+mountOptions:
+   - discard

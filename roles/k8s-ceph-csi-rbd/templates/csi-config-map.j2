@@ -2,8 +2,8 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ceph-csi-config
-  namespace: {{ KUBERNETES_CEPH_NAMESPACE }}
+  name: {{ RESOURCE_CEPH_CSI_CONFIG_MAP_NAME }}
+  namespace: {{ RESOURCE_CEPH_CSI_NAMESPACE_NAME }}
 data:
   config.json: |-
     [
