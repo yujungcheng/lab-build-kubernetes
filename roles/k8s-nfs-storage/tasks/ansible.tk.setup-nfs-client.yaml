@@ -1,0 +1,57 @@
+---
+- name: update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+  ignore_errors: yes
+
+- name: install nfs common
+  ansible.builtin.apt:
+    state: present
+    pkg: 
+    - nfs-common
+    - nfs4-acl-tools
+
+- name: check nfs export
+  ansible.builtin.command:
+    cmd: "showmount -e {{ hostvars['master']['ansible_default_ipv4']['address'] }}"
+  register: nfs_export
+
+- name: print nfs export
+  ansible.builtin.debug:
+    msg: "{{ nfs_export.stdout }}"
+
+- name: check nfs mount dir exist
+  ansible.builtin.stat:
+    path: "{{ NFS_SHARE_MOUNT_DIR }}"
+  register: nfs_mount_dir  
+
+- name: create nfs mount dir
+  ansible.builtin.file:
+    path: "{{ NFS_SHARE_MOUNT_DIR }}"
+    state: directory
+    owner: root
+    group: root
+  when: not nfs_mount_dir.stat.exists
+
+- name: umount nfs share
+  include_tasks: "ansible.tk.umount-nfs-share.yaml"
+
+- name: mount nfs share
+  ansible.posix.mount:
+    src: "{{ hostvars['master']['ansible_default_ipv4']['address'] }}:{{ NFS_SHARE_DIR }}"
+    path: "{{ NFS_SHARE_MOUNT_DIR }}"
+    fstype: nfs
+    opts: "rw,sync"
+    state: mounted  # or simply use "remounted" and remove umount tasks.
+
+- name: check nfs mount
+  ansible.builtin.command:
+    cmd: mount --type nfs4
+  register: nfs4_mount
+
+- name: print nfs mount
+  ansible.builtin.debug:
+    msg: "{{ nfs4_mount.stdout }}"
+
+- name: umount nfs share
+  include_tasks: "ansible.tk.umount-nfs-share.yaml"

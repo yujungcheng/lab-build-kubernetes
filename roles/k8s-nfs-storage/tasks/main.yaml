@@ -1,0 +1,11 @@
+---
+# Tasks
+- name: setup nfs server on master
+  when: inventory_hostname == groups['masters'][0]
+  include_tasks: ansible.tk.setup-nfs-server.yaml
+
+- name: setup nfs client on worker
+  when: inventory_hostname in groups['workers']
+  include_tasks: ansible.tk.setup-nfs-client.yaml
+
+#- meta: end_play

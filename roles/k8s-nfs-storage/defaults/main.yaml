@@ -1,0 +1,12 @@
+---
+NFS_SHARE_DIR: '/mnt/nfs'
+NFS_SHARE_DIR_OWNER: 'nobody'
+NFS_SHARE_DIR_GROUP: 'nogroup'
+NFS_SHARE_DIR_PERMISSION: '0777'
+
+NFS_SHARE_SUB_DIR:
+- data
+- test
+- database
+
+NFS_SHARE_MOUNT_DIR: '/mnt/nfs'
