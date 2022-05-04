@@ -16,7 +16,9 @@ worker-3
 
 [all:vars]
 OS_VERSION = 'xUbuntu_20.04'
+OS_USERNAME = 'ubuntu'
 CRIO_VERSION = '1.23'
+
 
 MANIFEST_TIGERA_OPERATOR_URL = 'https://docs.projectcalico.org/manifests/tigera-operator.yaml'
 MANIFEST_CUSTOM_RESOURCES_URL = 'https://docs.projectcalico.org/manifests/custom-resources.yaml'
@@ -25,8 +27,4 @@ MANIFEST_DASHBOARD_URL = 'https://raw.githubusercontent.com/kubernetes/dashboard
 
 GIT_KUBE_PROMETHEUS_URL = 'https://github.com/prometheus-operator/kube-prometheus.git'
 
-NFS_SHARE_DIR = '/mnt/nfs'
-NFS_SHARE_DIR_OWNER = 'nobody'
-NFS_SHARE_DIR_GROUP = 'nogroup'
-NFS_SHARE_DIR_PERMISSION = '0777'
-NFS_SHARE_MOUNT_DIR = '/mnt/nfs'
+KUBE_POD_NETWORK_CIDR = '10.85.0.0/16'

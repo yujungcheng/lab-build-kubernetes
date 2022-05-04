@@ -1,0 +1,10 @@
+---
+# this playbook setup autocomplete to kubectl
+- name: Setup kubectl autocomplete and other alias
+  hosts: masters
+  gather_facts: false
+  any_errors_fatal: true
+  gather_subset: 
+    - min
+  roles:
+    - k8s-kubectl-autocomplete

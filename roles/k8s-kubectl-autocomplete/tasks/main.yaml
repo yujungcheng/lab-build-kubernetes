@@ -1,0 +1,23 @@
+---
+- name: add kubectl autocomplete script file
+  ansible.builtin.shell: |
+    kubectl completion bash > "/home/{{ OS_USERNAME }}/.kube/autocomplete"
+
+- name: set permission
+  ansible.builtin.file:
+    path: /home/{{ OS_USERNAME }}/.kube/autocomplete
+    owner: "{{ OS_USERNAME }}"
+    group: "{{ OS_USERNAME }}"
+
+- name: update bashrc file to source autocomplete
+  ansible.builtin.lineinfile:
+    path: /home/{{ OS_USERNAME }}/.bashrc
+    line: "source .kube/autocomplete"
+
+- name: update bashrc with shorthand alias for kubectl
+  ansible.builtin.lineinfile:
+    path: /home/{{ OS_USERNAME }}/.bashrc
+    line: "{{ item }}"
+  with_items:
+  - 'alias k=kubectl'
+  - 'complete -F __start_kubectl k'
