@@ -71,6 +71,7 @@ ansible.tk = task list
 ansible.tp = template
 ```
 
+
 ## Dashboard
 ```
 # check the kubernetes-dashboard is NodePort type and port number
@@ -88,6 +89,22 @@ https://localhost:32000
 
 # 3. use the token from the playbook 11 run output to access dashboard
 ```
+
+
+## Reinitialised master node
+If master node has been re-initialised and lost all origional worker nodes.
+To add worker node, the node has to be reset first. Otherwise you get error like below
+```
+[preflight] Running pre-flight checks
+[preflight] Reading configuration from the cluster...
+[preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+W0506 01:15:13.238847 1419653 utils.go:69] The recommended value for "resolvConf" in "KubeletConfiguration" is: /run/systemd/resolve/resolv.conf; the provided value is: /run/systemd/resolve/resolv.conf
+```
+To reset the worker node, run following command on worker node
+```
+$ kubeadm reset
+```
+Then run playbook "ansible.pb.09.add-worker-nodes.yaml" to join worker nodes.
 
 
 ## Todo:
