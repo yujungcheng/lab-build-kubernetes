@@ -102,9 +102,14 @@ W0506 01:15:13.238847 1419653 utils.go:69] The recommended value for "resolvConf
 ```
 To reset the worker node, run following command on worker node
 ```
-$ kubeadm reset
+$ kubeadm reset --force
 ```
 Then run playbook "ansible.pb.09.add-worker-nodes.yaml" to join worker nodes.
+
+Another workaround is run join with command with following options.
+```
+--ignore-preflight-errors='DirAvailable--etc-kubernetes-manifests,FileAvailable--etc-kubernetes-kubelet.conf,Port-10250,FileAvailable--etc-kubernetes-pki-ca.crt'
+```
 
 
 ## Todo:
