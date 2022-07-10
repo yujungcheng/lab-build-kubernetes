@@ -4,6 +4,7 @@
   become: true
   vars:
     timestamp: "{{ '%Y%m%d%H%M%S' | strftime(ansible_date_time.epoch) }}"
+    kubeadm_reset: true
   tasks:
   - name: ensure br_netfilter module loaded
     community.general.modprobe:
@@ -28,24 +29,24 @@
     ansible.builtin.shell: |
       kubeadm config images pull --cri-socket /var/run/crio/crio.sock
 
-  # todo: use variable, what to do with multiple masters
   - name: add record in /etc/hosts
     ansible.builtin.lineinfile:
       path: /etc/hosts
-      line: "192.168.122.10 k8s.homelab.com"
+      line: "{{ hostvars['master'].ansible_host }} {{ CLUSTER_API_DOMAIN_NAME }}"
       state: present
 
   - name: kubeadm reset
     ansible.builtin.shell: |
       kubeadm reset --force
+    when: kubeadm_reset == true
 
-  # todo: use variable
   - name: bootstrap cluster with shared endpoint (dns name for control plane API)
     ansible.builtin.shell: |
       kubeadm init --cri-socket /var/run/crio/crio.sock \
-      --pod-network-cidr=10.85.0.0/16 \
-      --control-plane-endpoint=k8s.homelab.com \
-      --upload-certs > /tmp/kubeadm.init.{{ '%Y%m%d%H%M%S' | strftime(ansible_date_time.epoch) }}.log
+      --pod-network-cidr={{ KUBE_POD_NETWORK_CIDR }} \
+      --control-plane-endpoint={{ CLUSTER_API_DOMAIN_NAME }} \
+      --upload-certs > /tmp/kubeadm.init.{{ '%Y%m%d%H%M%S' | strftime(ansible_date_time.epoch) }}.log 
+    when: kubeadm_reset == true
 
 # refer to the kubeadm init log to setup kube config for ubuntu user
   - name: create kube config in ubuntu home

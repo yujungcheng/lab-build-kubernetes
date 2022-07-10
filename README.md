@@ -5,14 +5,15 @@ Follow the installation guide "deploy-kubernetes-cluster-on-ubuntu-with-kubeadm"
 
 The guides have few unclear steps and conflicts and still have to consolidate the playbooks for automation as possible.
 
-The kubernetes cluster includes 1 master node and 3 worker nodes and is for learning purpose.
+The kubernetes cluster includes 1 master node and 4 worker nodes and is for learning purpose.
 
 
 ## Node Spec.
 - VM: k8s-master, hostname=master, vCPU=2, Ram=8G, Disk=16G
-- VM: k8s-node1, hostname=worker-1, vCPU=2, Ram=4G, Disk=16G
-- VM: k8s-node2, hostname=worker-2, vCPU=2, Ram=4G, Disk=16G
-- VM: k8s-node3, hostname=worker-3, vCPU=2, Ram=4G, Disk=16G
+- VM: k8s-worker-1, hostname=worker-1, vCPU=2, Ram=4G, Disk=16G
+- VM: k8s-worker-2, hostname=worker-2, vCPU=2, Ram=4G, Disk=16G
+- VM: k8s-worker-3, hostname=worker-3, vCPU=2, Ram=4G, Disk=16G
+- VM: k8s-worker-4, hostname=worker-4, vCPU=2, Ram=4G, Disk=16G
 
 - OS: Ubuntu 20.04
 - Username: ubuntu
@@ -21,14 +22,14 @@ The kubernetes cluster includes 1 master node and 3 worker nodes and is for lear
 
 ## Create Ubuntu Template Image
 ```
-# 1. edit systemd-networkd-wait-online.service
+### 1. edit systemd-networkd-wait-online.service
 $ vim /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service
 
 # add timeout option
 ExecStart=/lib/systemd/systemd-networkd-wait-online --timeout=10
 
 
-# 2. edit netplan conf (https://bugs.launchpad.net/netplan/+bug/1738998)
+### 2. edit netplan conf (https://bugs.launchpad.net/netplan/+bug/1738998)
 $ vim /etc/netplan/00-installer-config.yaml
 
 # edit the first interface to use "mac" as dhcp-identifier.
@@ -41,7 +42,7 @@ network:
       link-local: []
   version: 2
 
-# 3. disable auto update/upgrade
+### 3. disable auto update/upgrade
 $ vim /etc/apt/apt.conf.d/20auto-upgrades
 
 # edit file with content below
@@ -49,18 +50,20 @@ APT::Periodic::Update-Package-Lists "0";
 APT::Periodic::Download-Upgradeable-Packages "0";
 APT::Periodic::AutocleanInterval "0";
 APT::Periodic::Unattended-Upgrade "1";
-
 ```
 
 
 ## Ansible Playbook
 ```
 # Run playbook command
-$ ansible-playbook <playbook filename> -K 
+$ ansible-playbook -K <playbook filename>
 ``` 
 > **_NOTE:_** developed with ansible version ansible 2.10.5 
+>
 > **_NOTE:_** run playbook with -K (become root password) up to pb.09
+>
 > **_NOTE:_** run playbook without -K from pb.10
+>
 > **_NOTE:_** ensure ansible.cfg is configured properly 
 
 ```
@@ -117,13 +120,41 @@ Another workaround is run join with command with following options.
 - automation network and IP setup
 - automation ssh-copy-id
 - use jinja2 in manifest template
+- get all manifest from download links
 
 
 ## Troubleshoot:
 1. When add worker node and get error message "/proc/sys/net/bridge/bridge-nf-call-iptables does not exist", load "br_netfilter" kernel module. 
+
 2. It seems like metric server and prometheus conflict each other, have to investigate their manifests.
+
 3. When tried to delete tigera operator namespace, it stuck in "Terminating" status which is due to "metric server" issue. This need further investigation.
+
 4. Had DNS issue inside pods. The pods count not reach kube-dns services. Didn't spent much time to troubleshoot it, so simply restart whole cluster and issue fixed.
+
+5. Failed tasks "execcute crictl runp ansible.tp.crio.pod-network.json" in plabook 5.
+```
+fatal: [worker-4]: FAILED! => {
+    "changed": true,
+    "cmd": "crictl create d3d173762a66b1436766209ec9eed45fe54436269f774a29d95fb36c5c030fa1 crio.pod-nginx.json crio.pod-network.json\n",
+    "delta": "0:00:02.013078",
+    "end": "2022-07-11 01:05:40.280570",
+    "rc": 1,
+    "start": "2022-07-11 01:05:38.267492"
+}
+
+STDERR:
+
+E0711 01:05:40.279672   20216 remote_runtime.go:421] "CreateContainer in sandbox from runtime service failed" err="rpc error: code = DeadlineExceeded desc = context deadline exceeded" podSandboxID="d3d173762a66b1436766209ec9eed45fe54436269f774a29d95fb36c5c030fa1"
+time="2022-07-11T01:05:40+10:00" level=fatal msg="creating container: rpc error: code = DeadlineExceeded desc = context deadline exceeded"
+
+
+MSG:
+
+non-zero return code
+```
+It is due to http request has a deadline or timeout. 
+Current solution is run playbook to each node in sequence (set playbook serial to 1) and keep re-run the playbook.
 
 
 ## Config Notes:

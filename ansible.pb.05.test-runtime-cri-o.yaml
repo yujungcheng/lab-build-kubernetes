@@ -2,6 +2,7 @@
 - name: Test CRI-O create pod and container
   hosts: all
   become: true
+  serial: 1
   tasks:
 
 # todo:
@@ -18,6 +19,8 @@
     - nginx
     - hello-world
     ignore_errors: yes
+    tags:
+    - never
 
   - name: check test images
     ansible.builtin.shell: |
@@ -52,7 +55,11 @@
       crictl rmp {{ fact_pod_id }}
     when: fact_pod_id is defined
     ignore_errors: yes
-  
+
+  - name: sleep 3 seconds
+    ansible.builtin.pause:
+      seconds: 3
+
   - name: execcute crictl runp ansible.tp.crio.pod-network.json
     ansible.builtin.shell: |
       crictl runp crio.pod-network.json

@@ -80,3 +80,7 @@
     ansible.builtin.template:
       src: ansible.tp.apt-20auto-upgrades
       dest: /etc/apt/apt.conf.d/20auto-upgrades
+
+  - name: configure hostname
+    ansible.builtin.hostname:
+      name: "{{ hostname }}"

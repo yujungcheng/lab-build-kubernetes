@@ -29,14 +29,32 @@
   - name: update apt cache
     ansible.builtin.apt:
       update_cache: yes
-  
-  - name: install packages
+
+  - name: set packages to install
+    ansible.builtin.dpkg_selections:
+      name: "{{ item }}"
+      selection: install
+    with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+    ignore_errors: yes
+
+  - name: uninstall packages
     ansible.builtin.apt:
-      state: present
+      state: absent
       pkg:
       - kubelet
       - kubeadm
       - kubectl
+
+  - name: install packages
+    ansible.builtin.apt:
+      state: present
+      pkg:
+      - kubelet={{ KUBE_VERSION }}
+      - kubeadm={{ KUBE_VERSION }}
+      - kubectl={{ KUBE_VERSION }}
 
   - name: set packages to hold
     ansible.builtin.dpkg_selections:

@@ -24,7 +24,7 @@
   - name: add endpoint record in /etc/hosts
     ansible.builtin.lineinfile:
       path: /etc/hosts
-      line: "192.168.122.10 k8s.homelab.com"
+      line: "{{ hostvars['master'].ansible_host }} {{ CLUSTER_API_DOMAIN_NAME }}"
       state: present
 
   - name: add worker node

@@ -1,7 +1,8 @@
-master ansible_host=192.168.122.10
-worker-1 ansible_host=192.168.122.11
-worker-2 ansible_host=192.168.122.12
-worker-3 ansible_host=192.168.122.13
+master ansible_host=192.168.122.10 hostname=master
+worker-1 ansible_host=192.168.122.11 hostname=worker-1
+worker-2 ansible_host=192.168.122.12 hostname=worker-2
+worker-3 ansible_host=192.168.122.13 hostname=worker-3
+worker-4 ansible_host=192.168.122.14 hostname=worker-4
 
 
 [masters]
@@ -12,13 +13,16 @@ master
 worker-1
 worker-2
 worker-3
+worker-4
 
 
 [all:vars]
 OS_VERSION = 'xUbuntu_20.04'
 OS_USERNAME = 'ubuntu'
 CRIO_VERSION = '1.23'
-
+KUBE_VERSION = '1.23.8-00'
+CLUSTER_API_DOMAIN_NAME = 'k8s.homelab.com'
+KUBE_POD_NETWORK_CIDR = '10.85.0.0/16'
 
 MANIFEST_TIGERA_OPERATOR_URL = 'https://docs.projectcalico.org/manifests/tigera-operator.yaml'
 MANIFEST_CUSTOM_RESOURCES_URL = 'https://docs.projectcalico.org/manifests/custom-resources.yaml'
@@ -26,5 +30,3 @@ MANIFEST_TEST_POD_URL = 'https://k8s.io/examples/pods/commands.yaml'
 MANIFEST_DASHBOARD_URL = 'https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended.yaml'
 
 GIT_KUBE_PROMETHEUS_URL = 'https://github.com/prometheus-operator/kube-prometheus.git'
-
-KUBE_POD_NETWORK_CIDR = '10.85.0.0/16'
