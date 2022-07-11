@@ -43,9 +43,9 @@
     ansible.builtin.debug:
       msg: "{{ metrics_server_apiservice.stdout }}"
 
-  - name: wait 10 seconds for metrics server ready
+  - name: wait 30 seconds for metrics server ready
     ansible.builtin.pause:
-      seconds: 10
+      seconds: 30
 
   - name: check kubectl top nodes
     ansible.builtin.command:
