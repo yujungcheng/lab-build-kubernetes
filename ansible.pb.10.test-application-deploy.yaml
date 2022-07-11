@@ -22,3 +22,24 @@
   - name: delete test pod
     ansible.builtin.command:
       cmd: kubectl delete -f {{ MANIFEST_TEST_POD_URL }}
+
+  - name: create nginx pod
+    ansible.builtin.command:
+      cmd: kubectl run test-nginx --image=nginx --restart=Never
+
+  - name: wait for 15 seconds to let nginx pod complete
+    ansible.builtin.pause:
+      seconds: 15
+
+  - name: check nginx pod
+    ansible.builtin.command:
+      cmd: kubectl get pods test-nginx
+    register: test_pod_output
+
+  - name: print nginx pod status
+    ansible.builtin.debug:
+      msg: "{{ test_pod_output.stdout }}"
+
+  - name: delete nginx pod
+    ansible.builtin.command:
+      cmd: kubectl delete pod test-nginx
