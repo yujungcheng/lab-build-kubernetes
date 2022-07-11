@@ -1,8 +1,8 @@
 #!/bin/bash
 
 prefix='k8s'
-hosts=("master" "node1" "node2" "node3")
-vm_ips=("192.168.122.10" "192.168.122.11" "192.168.122.12" "192.168.122.13")
+hosts=("master" "worker-1" "worker-2" "worker-3" "worker-4")
+vm_ips=("192.168.122.10" "192.168.122.11" "192.168.122.12" "192.168.122.13" "192.168.122.14")
 
 
 declare -A k8s_node_mac

@@ -148,7 +148,7 @@
       kubectl get pods --namespace ingress-nginx | grep "^ingress-nginx-controller-" | cut -d' ' -f1
     register: ingress_nginx_controller_name
 
-  - name: xxx
+  - name: print ingress_nginx_controller_name
     ansible.builtin.debug:
       msg: "{{ ingress_nginx_controller_name.stdout }}"
 

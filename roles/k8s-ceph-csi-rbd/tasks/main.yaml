@@ -12,8 +12,8 @@
     version: "{{ CEPH_CSI_BRANCH }}"
     depth: 1
   tags:
-   - deploy
-#  - never  # skip this task
+  - deploy
+  #- never  # skip this task
 
 - name: copy deploy rbd plugin manifest
   ansible.builtin.copy:
@@ -21,64 +21,64 @@
     src: "/tmp/ceph-csi/deploy/rbd/kubernetes/"
     dest: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"
   tags:
-   - deploy
-#  - never  # skip this task
+  - deploy
+  #- never  # skip this task
 
 - name: copy namespace manifest
   ansible.builtin.template:
     src: csi-namespace.j2
     dest: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}/csi-namespace.yaml"
   tags:
-   - deploy
+  - deploy
 
 - name: carete namespace
   ansible.builtin.command:
     cmd: kubectl apply -f csi-namespace.yaml
     chdir: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"
   tags:
-   - deploy
+  - deploy
 
 - name: copy ceph-csi-config config-map manifest
   ansible.builtin.template:
     src: csi-config-map.j2
     dest: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}/csi-config-map.yaml"
   tags:
-   - deploy
+  - deploy
 
 - name: create ceph-csi-config config-map
   ansible.builtin.command:
     cmd: kubectl apply -f csi-config-map.yaml
     chdir: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"
   tags:
-   - deploy
+  - deploy
 
 - name: copy ceph-config config-map manifest
   ansible.builtin.template:
     src: csi-ceph-config.j2
     dest: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}/csi-ceph-conf.yaml"
   tags:
-   - deploy
+  - deploy
 
 - name: create ceph-config config-map
   ansible.builtin.command:
     cmd: kubectl apply -f csi-ceph-conf.yaml
     chdir: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"
   tags:
-   - deploy
+  - deploy
 
 - name: copy secret manifest
   ansible.builtin.template:
     src: csi-secret.j2
     dest: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}/csi-secret.yaml"
   tags:
-   - deploy
+  - deploy
 
 - name: create secret
   ansible.builtin.command:
     cmd: kubectl apply -f csi-secret.yaml
     chdir: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"
   tags:
-   - deploy
+  - deploy
 
 - name: check namespace value to current manifest 
   ansible.builtin.shell:
@@ -86,7 +86,7 @@
     chdir: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"
   register: default_namespace_count
   tags:
-   - deploy
+  - deploy
 
 # todo: break into multi tasks using register and when condition and use replace module
 - name: update namespace to current deploy rbd plugin manifest
@@ -96,7 +96,7 @@
   when: default_namespace_count.stdout != "0"
   ignore_errors: True
   tags:
-   - deploy
+  - deploy
 
 - name: create rbac and pod security policy resources
   ansible.builtin.command:
@@ -108,49 +108,49 @@
   - csi-provisioner-psp.yaml
   - csi-nodeplugin-psp.yaml
   tags:
-   - deploy
+  - deploy
 
 - name: copy rbdplugin-provisioner mainfest
   ansible.builtin.template:
     src: csi-rbdplugin-provisioner.j2
     dest: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}/csi-rbdplugin-provisioner.yaml"
   tags:
-   - deploy
+  - deploy
 
 - name: create rbdplugin-provisioner
   ansible.builtin.command:
     cmd: kubectl apply -f csi-rbdplugin-provisioner.yaml
     chdir: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"
   tags:
-   - deploy
+  - deploy
 
 - name: copy rbdplugin manifest
   ansible.builtin.template:
     src: csi-rbdplugin.j2
     dest: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}/csi-rbdplugin.yaml"
   tags:
-   - deploy
+  - deploy
 
 - name: create rbdplugin
   ansible.builtin.command:
     cmd: kubectl apply -f csi-rbdplugin.yaml
     chdir: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"
   tags:
-   - deploy
+  - deploy
 
 - name: copy storage class manifest
   ansible.builtin.template:
     src: csi-storage-class.j2
     dest: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}/csi-storage-class.yaml"
   tags:
-   - deploy
+  - deploy
 
 - name: create ceph csi rbd storage class
   ansible.builtin.command:
     cmd: kubectl apply -f csi-storage-class.yaml
     chdir: "{{ KUBERNETES_CEPH_CSI_DEPLOY_TEMPLATE_DIR }}"
   tags:
-   - deploy
+  - deploy
 
 # pvc test part
 - name: copy ceph csi rbd pvc test manifest
