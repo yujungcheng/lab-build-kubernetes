@@ -1,0 +1,13 @@
+---
+- name: Kubeadm reset on all nodes
+  hosts: all
+  become: true
+  tasks:
+  - name: kubeadm reset
+    ansible.builtin.shell: |
+      kubeadm reset --force
+
+  - name: clean cni config
+    file:
+      state: absent
+      path: /etc/cni/net.d/*
