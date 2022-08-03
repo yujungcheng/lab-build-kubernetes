@@ -1,14 +1,48 @@
 ---
 - name: Get apt update and upgrade on all nodes
   hosts: all
+  gather_facts: false
   become: true
   tasks:
+  - name: wait node connection
+    ansible.builtin.wait_for_connection:
+      connect_timeout: 5
+      sleep: 10
+      timeout: 600
+
+  - name: copy apt auto-upgrades config template
+    ansible.builtin.template:
+      src: ansible.tp.apt-20auto-upgrades
+      dest: /etc/apt/apt.conf.d/20auto-upgrades
+
+  - name: disable apt daily service
+    ansible.builtin.systemd:
+      name: apt-daily.service
+      state: stopped
+      enabled: no
+
+  - name: disable apt daily timer
+    ansible.builtin.systemd:
+      name: apt-daily.timer
+      state: stopped
+      enabled: no
+
+  - name: disable apt daily upgrade timer
+    ansible.builtin.systemd:
+      name: apt-daily-upgrade.timer
+      state: stopped
+      enabled: no
+
+  - name: fix dpkg if there is
+    ansible.builtin.command:
+      cmd: dpkg --configure -a
+
   - name: apt update and safe upgrade
     ansible.builtin.apt:
       update_cache: yes
       upgrade: safe
 
-#- name: reboot
-#  ansible.builtin.reboot:
-#    post_reboot_delay: 30
-#    reboot_timeout: 120
+  - name: reboot
+    ansible.builtin.reboot:
+      post_reboot_delay: 30
+      reboot_timeout: 600
